@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>TaigoAir — Прогноз</title>
+
+    <script
+        src="{{ url_for('static', filename='js/forecast.js') }}"
+        defer>
+    </script>
+</head>
+<body>
+
+<h1>TaigoAir — Прогноз проветривания</h1>
+
+<p>
+    <a href="/">Главная</a> |
+    <a href="/map">Карта</a> |
+    <a href="/home">Мой дом</a>
+</p>
+
+<hr>
+
+<h2>TaigoPredict + TaigoBalance</h2>
+
+<p>
+    Сценарный прогноз изменения CO₂, PM2.5
+    и температуры при открытом окне.
+</p>
+
+<label for="air-exchange">
+    Кратность воздухообмена, 1/ч:
+</label>
+
+<input
+    id="air-exchange"
+    type="number"
+    min="0.1"
+    max="30"
+    step="0.1"
+    value="{{ settings.air_changes_per_hour }}"
+>
+
+<button id="calculate-forecast">
+    Рассчитать прогноз
+</button>
+
+<p id="forecast-status">
+    Расчёт ещё не выполнен.
+</p>
+
+<p>
+    Объём комнаты:
+    <span id="room-volume">—</span> м³
+</p>
+
+<p>
+    Воздухообмен:
+    <span id="air-flow">—</span> м³/ч
+</p>
+
+<hr>
+
+<h3>Прогноз по времени</h3>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>Время</th>
+            <th>CO₂, ppm</th>
+            <th>PM2.5, мкг/м³</th>
+            <th>Температура, °C</th>
+            <th>Энергия воздухообмена, Вт·ч</th>
+        </tr>
+    </thead>
+
+    <tbody id="forecast-table"></tbody>
+</table>
+
+<hr>
+
+
+<hr>
+
+<h2>TaigoRecommend — рекомендация</h2>
+
+<p>
+    Решение:
+    <strong id="recommendation-decision">
+        Расчёт ещё не выполнен
+    </strong>
+</p>
+
+<p>
+    Рекомендуемое время:
+    <span id="recommendation-time">—</span>
+</p>
+
+<h3>Объяснение</h3>
+
+<p id="recommendation-reason">
+    Нажми «Рассчитать прогноз».
+</p>
+
+<h3>Предупреждения</h3>
+
+<ul id="recommendation-warnings">
+    <li>Нет данных</li>
+</ul>
+
+<p>
+    Рекомендация основана на упрощённой
+    математической модели и требует
+    проверки на реальных измерениях.
+</p>
+
+
+<h3>Ограничения модели</h3>
+
+<p id="forecast-limitations">
+    Расчёт использует упрощённую модель.
+</p>
+
+<p>
+    Наружный CO₂ пока принят равным 420 ppm.
+    Кратность воздухообмена задаётся вручную.
+    Результаты не являются проверенным
+    прогнозом для реального помещения.
+</p>
+
+<hr>
+
+<p>
+    <a href="/forecast/history">
+        История прогнозов
+    </a>
+</p>
+
+</body>
+</html>

@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>TaigoAir — Настройки</title>
+</head>
+<body>
+
+<h1>TaigoAir — Настройки</h1>
+
+<p>
+    <a href="/">Главная</a> |
+    <a href="/forecast">Прогноз</a> |
+    <a href="/home">Мой дом</a>
+</p>
+
+<hr>
+
+{% if saved %}
+<p>✅ Настройки сохранены!</p>
+{% endif %}
+
+{% if error %}
+<p>Ошибка: {{ error }}</p>
+{% endif %}
+
+<form method="POST">
+
+    <h2>Качество воздуха</h2>
+
+    <p>
+        <label>Порог CO₂, ppm:</label>
+        <input type="number" name="co2_target"
+               min="400" max="5000" step="1" required
+               value="{{ settings.co2_target }}">
+    </p>
+
+    <p>
+        <label>Предпочтительный CO₂, ppm:</label>
+        <input type="number" name="co2_preferred"
+               min="350" max="5000" step="1" required
+               value="{{ settings.co2_preferred }}">
+    </p>
+
+    <p>
+        <label>Предел PM2.5, мкг/м³:</label>
+        <input type="number" name="pm25_limit"
+               min="1" max="500" step="0.1" required
+               value="{{ settings.pm25_limit }}">
+    </p>
+
+    <h2>Температура</h2>
+
+    <p>
+        <label>Максимальное охлаждение, °C:</label>
+        <input type="number" name="max_temperature_drop"
+               min="0" max="15" step="0.1" required
+               value="{{ settings.max_temperature_drop }}">
+    </p>
+
+    <h2>Параметры модели</h2>
+
+    <p>
+        <label>Наружный CO₂, ppm:</label>
+        <input type="number" name="outdoor_co2"
+               min="300" max="2000" step="1" required
+               value="{{ settings.outdoor_co2 }}">
+    </p>
+
+    <p>
+        <label>Кратность воздухообмена, 1/ч:</label>
+        <input type="number" name="air_changes_per_hour"
+               min="0.1" max="30" step="0.1" required
+               value="{{ settings.air_changes_per_hour }}">
+    </p>
+
+    <button type="submit">Сохранить настройки</button>
+
+</form>
+
+<hr>
+
+<p>
+    Все параметры задаются для учебных сценариев.
+    Точность модели ещё не подтверждена экспериментами.
+</p>
+
+</body>
+</html>

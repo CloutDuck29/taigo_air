@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>TaigoAir — История прогнозов</title>
+</head>
+
+<body>
+
+<h1>История прогнозов TaigoAir</h1>
+
+<p>
+    <a href="/forecast">← Прогноз</a> |
+    <a href="/">Главная</a>
+</p>
+
+<p>
+    <a href="/forecast/export">
+        Скачать историю CSV
+    </a>
+</p>
+
+{% if runs %}
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Дата</th>
+            <th>Адрес</th>
+            <th>Режим</th>
+            <th>CO₂ внутри</th>
+            <th>PM2.5 снаружи</th>
+            <th>Воздухообмен</th>
+            <th>Решение</th>
+            <th>Время</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for run in runs %}
+        <tr>
+            <td>{{ run.id }}</td>
+            <td>{{ run.created_at }}</td>
+            <td>{{ run.address }}</td>
+            <td>{{ run.input_mode }}</td>
+            <td>{{ run.indoor_co2 }} ppm</td>
+            <td>{{ run.outdoor_pm25 }} мкг/м³</td>
+            <td>
+                {{ run.air_changes_per_hour }} 1/ч
+            </td>
+            <td>{{ run.recommendation }}</td>
+            <td>
+                {{ run.recommended_minutes
+                   if run.recommended_minutes is not none
+                   else "—" }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+
+<p>Сохранённых прогнозов пока нет.</p>
+
+{% endif %}
+
+</body>
+</html>

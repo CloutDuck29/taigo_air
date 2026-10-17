@@ -2,9 +2,8 @@
 .idea/
 __pycache__/
 *.pyc
-.DS_Store
 .env
-
+.DS_Store
 data/*.db
 data/*.db-*
 data/industry_cache.json

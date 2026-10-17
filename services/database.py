@@ -1,5 +1,6 @@
 
 import sqlite3
+import json
 from datetime import datetime
 from pathlib import Path
 
@@ -47,6 +48,43 @@ def init_db():
                 ceiling_height REAL
             )
         """)
+
+
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS forecast_runs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                created_at TEXT NOT NULL,
+                address TEXT,
+                input_mode TEXT,
+                indoor_co2 REAL,
+                indoor_pm25 REAL,
+                indoor_temperature REAL,
+                outdoor_pm25 REAL,
+                outdoor_temperature REAL,
+                outdoor_co2 REAL,
+                room_volume REAL,
+                air_changes_per_hour REAL,
+                recommendation TEXT,
+                recommended_minutes INTEGER,
+                reason TEXT,
+                results_json TEXT NOT NULL
+            )
+        """)
+
+
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS settings (
+                id INTEGER PRIMARY KEY CHECK (id = 1),
+                co2_target REAL NOT NULL,
+                co2_preferred REAL NOT NULL,
+                pm25_limit REAL NOT NULL,
+                max_temperature_drop REAL NOT NULL,
+                outdoor_co2 REAL NOT NULL,
+                air_changes_per_hour REAL NOT NULL
+            )
+        """)
+
+
 
 
 
@@ -121,4 +159,110 @@ def save_home(data):
             data["window_direction"],
             data["room_area"],
             data["ceiling_height"]
+        ))
+
+
+def save_forecast_run(home, sensors, air, weather, forecast):
+    recommendation = forecast.get("recommendation", {})
+
+    with get_connection() as connection:
+        cursor = connection.execute("""
+            INSERT INTO forecast_runs (
+                created_at,
+                address,
+                input_mode,
+                indoor_co2,
+                indoor_pm25,
+                indoor_temperature,
+                outdoor_pm25,
+                outdoor_temperature,
+                outdoor_co2,
+                room_volume,
+                air_changes_per_hour,
+                recommendation,
+                recommended_minutes,
+                reason,
+                results_json
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            datetime.now().isoformat(timespec="seconds"),
+            home.get("address"),
+            sensors.get("mode"),
+            sensors.get("co2"),
+            sensors.get("pm25"),
+            sensors.get("temperature_inside"),
+            air.get("pm25"),
+            weather.get("temperature"),
+            forecast.get("outdoor_co2_assumed"),
+            forecast.get("volume_m3"),
+            forecast.get("air_changes_per_hour"),
+            recommendation.get("decision"),
+            recommendation.get("recommended_minutes"),
+            recommendation.get("reason"),
+            json.dumps(
+                forecast.get("results", []),
+                ensure_ascii=False
+            )
+        ))
+
+        return cursor.lastrowid
+
+
+def get_forecast_runs(limit=100):
+    with get_connection() as connection:
+        rows = connection.execute("""
+            SELECT *
+            FROM forecast_runs
+            ORDER BY id DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
+
+    return [dict(row) for row in rows]
+
+
+DEFAULT_SETTINGS = {
+    "co2_target": 1000.0,
+    "co2_preferred": 800.0,
+    "pm25_limit": 35.0,
+    "max_temperature_drop": 3.0,
+    "outdoor_co2": 420.0,
+    "air_changes_per_hour": 3.0
+}
+
+
+def get_settings():
+    with get_connection() as connection:
+        row = connection.execute(
+            "SELECT * FROM settings WHERE id = 1"
+        ).fetchone()
+
+    if row is None:
+        return DEFAULT_SETTINGS.copy()
+
+    return {
+        key: row[key]
+        for key in DEFAULT_SETTINGS
+    }
+
+
+def save_settings(settings):
+    with get_connection() as connection:
+        connection.execute("""
+            INSERT INTO settings (
+                id, co2_target, co2_preferred,
+                pm25_limit, max_temperature_drop,
+                outdoor_co2, air_changes_per_hour
+            )
+            VALUES (1, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                co2_target = excluded.co2_target,
+                co2_preferred = excluded.co2_preferred,
+                pm25_limit = excluded.pm25_limit,
+                max_temperature_drop = excluded.max_temperature_drop,
+                outdoor_co2 = excluded.outdoor_co2,
+                air_changes_per_hour =
+                    excluded.air_changes_per_hour
+        """, tuple(
+            settings[key] for key in DEFAULT_SETTINGS
         ))

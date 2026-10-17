@@ -83,7 +83,7 @@ function selectPoint(latitude, longitude) {
 
     document.getElementById(
         "map-status"
-    ).textContent = "Точка выбрана. Сохрани координаты.";
+    ).textContent = "Точка выбрана. Заполни параметры и нажми «Сохранить квартиру».";
 }
 
 // Показываем ранее сохранённую точку
@@ -103,50 +103,3 @@ map.on("click", function (event) {
     );
 });
 
-// Сохраняем координаты в SQLite
-document.getElementById(
-    "save-location"
-).addEventListener("click", async function () {
-    const status = document.getElementById(
-        "map-status"
-    );
-
-    if (selectedLat === null || selectedLon === null) {
-        status.textContent = "Сначала выбери точку.";
-        return;
-    }
-
-    status.textContent = "Сохранение...";
-
-    try {
-        const response = await fetch("/api/map/home", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                latitude: selectedLat,
-                longitude: selectedLon
-            })
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(
-                result.error || "Ошибка сохранения"
-            );
-        }
-
-        status.textContent =
-            "Координаты и адрес успешно сохранены!";
-
-        document.getElementById(
-            "home-address"
-        ).textContent = result.address;
-
-    } catch (error) {
-        status.textContent = error.message;
-        console.error(error);
-    }
-});
