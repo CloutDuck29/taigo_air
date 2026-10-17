@@ -1,0 +1,48 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>TaigoAir — История</title>
+</head>
+<body>
+
+<h1>История измерений</h1>
+
+<p><a href="/">← На главную</a></p>
+
+{% if measurements %}
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>Дата и время</th>
+            <th>Режим</th>
+            <th>CO₂</th>
+            <th>PM2.5</th>
+            <th>Температура</th>
+            <th>Окно</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in measurements %}
+        <tr>
+            <td>{{ item.timestamp }}</td>
+            <td>{{ item.mode }}</td>
+            <td>{{ item.co2 }} ppm</td>
+            <td>{{ item.pm25 }} мкг/м³</td>
+            <td>{{ item.temperature_inside }} °C</td>
+            <td>
+                {{ "Открыто" if item.window_open else "Закрыто" }}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>История пока пуста.</p>
+{% endif %}
+
+</body>
+</html>

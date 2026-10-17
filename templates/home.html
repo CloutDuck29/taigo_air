@@ -1,0 +1,144 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>TaigoAir — Мой дом</title>
+</head>
+<body>
+
+<h1>TaigoAir — Мой дом</h1>
+
+<p><a href="/">← На главную</a></p>
+
+<p>
+    Настрой параметры квартиры для
+    прогнозирования качества воздуха.
+</p>
+
+{% if saved %}
+    <p>✅ Параметры успешно сохранены!</p>
+{% endif %}
+
+{% if error %}
+    <p>Ошибка: {{ error }}</p>
+{% endif %}
+
+<form method="POST">
+
+    <h3>Расположение</h3>
+
+    <p>
+        <label>Адрес:</label>
+        <input type="text"
+               name="address"
+               required
+               value="{{ home.address if home else '' }}">
+    </p>
+
+    <p>
+        <label>Этаж:</label>
+        <input type="number"
+               name="floor"
+               min="1"
+               max="100"
+               required
+               value="{{ home.floor if home and home.floor is not none else 1 }}">
+    </p>
+
+    <p>
+        <label>Направление окна:</label>
+
+        <select name="window_direction">
+
+            {% set direction = home.window_direction if home else 'N' %}
+
+            {% for code, name in [
+                ('N', 'Север'),
+                ('NE', 'Северо-восток'),
+                ('E', 'Восток'),
+                ('SE', 'Юго-восток'),
+                ('S', 'Юг'),
+                ('SW', 'Юго-запад'),
+                ('W', 'Запад'),
+                ('NW', 'Северо-запад')
+            ] %}
+                <option value="{{ code }}"
+                    {% if direction == code %}selected{% endif %}>
+                    {{ name }}
+                </option>
+            {% endfor %}
+
+        </select>
+    </p>
+
+    <h3>Помещение</h3>
+
+    <p>
+        <label>Площадь комнаты, м²:</label>
+        <input type="number"
+               name="room_area"
+               step="0.1"
+               min="0.1"
+               required
+               value="{{ home.room_area if home and home.room_area is not none else 18 }}">
+    </p>
+
+    <p>
+        <label>Высота потолков, м:</label>
+        <input type="number"
+               name="ceiling_height"
+               step="0.1"
+               min="1.5"
+               required
+               value="{{ home.ceiling_height if home and home.ceiling_height is not none else 2.7 }}">
+    </p>
+
+    <h3>Координаты дома</h3>
+
+    <p>
+        Пока необязательно.
+        Позже добавим выбор дома на карте Омска.
+    </p>
+
+    <p>
+        <label>Широта:</label>
+        <input type="number"
+               name="latitude"
+               step="any"
+               min="-90"
+               max="90"
+               value="{{ home.latitude if home and home.latitude is not none else '' }}">
+    </p>
+
+    <p>
+        <label>Долгота:</label>
+        <input type="number"
+               name="longitude"
+               step="any"
+               min="-180"
+               max="180"
+               value="{{ home.longitude if home and home.longitude is not none else '' }}">
+    </p>
+
+    <hr>
+
+    <button type="submit">
+        Сохранить параметры
+    </button>
+
+</form>
+
+{% if home and home.room_area and home.ceiling_height %}
+    <h3>Расчётный объём помещения</h3>
+
+    <p>
+        {{ (home.room_area * home.ceiling_height) | round(2) }} м³
+    </p>
+{% endif %}
+
+</body>
+</html>
