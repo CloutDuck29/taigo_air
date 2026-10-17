@@ -1,0 +1,35 @@
+
+{
+  "sources": [
+    {
+      "id": "omsk-refinery",
+      "name": "Омский нефтеперерабатывающий завод",
+      "industry": "Нефтепереработка",
+      "latitude": 55.07078,
+      "longitude": 73.22777,
+      "source": "OpenStreetMap / Mapcarta",
+      "source_url": "https://mapcarta.com/W236507372",
+      "coordinate_type": "Точка промышленного объекта"
+    },
+    {
+      "id": "omsky-kauchuk",
+      "name": "Омский каучук",
+      "industry": "Химическая промышленность",
+      "latitude": 55.071614,
+      "longitude": 73.296623,
+      "source": "Global Energy Monitor",
+      "source_url": "https://www.gem.wiki/Omsky_Kauchuk_Chemical_Plant",
+      "coordinate_type": "Приблизительное местоположение"
+    },
+    {
+      "id": "omsk-chp-5",
+      "name": "Омская ТЭЦ-5",
+      "industry": "Теплоэнергетика",
+      "latitude": 55.001843,
+      "longitude": 73.487412,
+      "source": "Global Energy Monitor",
+      "source_url": "https://www.gem.wiki/Omsk_CHP-5_power_station",
+      "coordinate_type": "Местоположение электростанции"
+    }
+  ]
+}

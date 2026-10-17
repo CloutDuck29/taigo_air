@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>TaigoAir — Карта Омска</title>
+
+    <!-- Библиотека Leaflet -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    >
+
+    <style>
+        #map {
+            width: 100%;
+            height: 550px;
+        }
+    </style>
+
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        defer>
+    </script>
+
+    <script
+        src="{{ url_for('static', filename='js/map.js') }}"
+        defer>
+    </script>
+</head>
+
+<body>
+
+<h1>TaigoAir — Карта Омска</h1>
+
+<p>
+    <a href="/">Главная</a> |
+    <a href="/home">Мой дом</a> |
+    <a href="/history">История</a>
+</p>
+
+<hr>
+
+<h2>Выбор дома</h2>
+
+<p>
+    Найди свой дом на карте и нажми на его
+    расположение, чтобы выбрать координаты.
+</p>
+
+<div id="map"></div>
+
+<hr>
+
+<h3>Выбранные координаты</h3>
+
+<p>
+    Широта:
+    <span id="selected-lat">—</span>
+</p>
+
+<p>
+    Долгота:
+    <span id="selected-lon">—</span>
+</p>
+
+<button id="save-location" type="button">
+    Сохранить точку
+</button>
+
+<p id="map-status"></p>
+
+<hr>
+
+<h3>Информация о квартире</h3>
+
+<p>
+    Адрес:
+    <span id="home-address">
+        {{ home.address if home else "Не указан" }}
+    </span>
+</p>
+
+<p>
+    Этаж:
+    {{ home.floor if home else "Не указан" }}
+</p>
+
+<p>
+    Направление окна:
+    {{ home.window_direction if home else "Не указано" }}
+</p>
+
+
+<div id="home-coordinates"
+     data-latitude="{{ home.latitude if home and home.latitude is not none else '' }}"
+     data-longitude="{{ home.longitude if home and home.longitude is not none else '' }}"
+     hidden>
+</div>
+
+
+<hr>
+
+<h2>Промышленные объекты Омска</h2>
+
+<p>
+    Источник: локальный каталог TaigoAir,
+    сформированный по открытым географическим данным.
+    Наличие предприятия не означает
+    подтверждённого загрязнения воздуха.
+</p>
+
+<button id="load-industry" type="button">
+    Найти промышленные объекты
+</button>
+
+
+<p id="industry-status">
+    Нажми кнопку для поиска.
+</p>
+
+<p id="industry-wind">
+    Направление ветра: нет данных
+</p>
+
+<table border="1" cellpadding="8">
+
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>Название</th>
+            <th>Расстояние, км</th>
+            <th>Тип</th>
+            <th>Направление к дому</th>
+            <th>Положение по ветру</th>
+        </tr>
+    </thead>
+
+    <tbody id="industry-table"></tbody>
+</table>
+
+<script
+    src="{{ url_for('static', filename='js/industry.js') }}"
+    defer>
+</script>
+
+</body>
+</html>

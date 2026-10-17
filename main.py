@@ -1,6 +1,9 @@
-
+from services.industry import get_industrial_sources
+import requests
 from flask import Flask, render_template, jsonify, request
+from services.geocoding import get_address
 from services.weather import get_weather
+from services.wind_analysis import analyze_wind
 from services.air_quality import get_air_quality
 from services.sensors import get_sensor_data, update_sensor_data
 from services.database import (
@@ -168,6 +171,120 @@ def air_quality_api():
         return jsonify(data), 503
 
     return jsonify(data)
+
+
+@app.route("/map")
+def map_page():
+    return render_template("map.html", home=get_home())
+
+
+
+@app.route("/api/map/home", methods=["POST"])
+def save_map_home():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({"error": "Неверные данные"}), 400
+
+    try:
+        latitude = float(data["latitude"])
+        longitude = float(data["longitude"])
+    except (ValueError, TypeError, KeyError):
+        return jsonify({"error": "Некорректные координаты"}), 400
+
+    if not (
+        54.5 <= latitude <= 55.5
+        and 72.5 <= longitude <= 74.5
+    ):
+        return jsonify({
+            "error": "Выбери точку в Омске или окрестностях"
+        }), 400
+
+    home = get_home()
+
+    if home is None:
+        return jsonify({
+            "error": "Сначала заполни страницу «Мой дом»"
+        }), 400
+
+    address = get_address(latitude, longitude)
+
+    # Не оставляем старый адрес для новой точки
+    if not address:
+        address = (
+            f"Точка на карте: "
+            f"{latitude:.6f}, {longitude:.6f}"
+        )
+
+    save_home({
+        "address": address,
+        "latitude": latitude,
+        "longitude": longitude,
+        "floor": home["floor"],
+        "window_direction": home["window_direction"],
+        "room_area": home["room_area"],
+        "ceiling_height": home["ceiling_height"]
+    })
+
+    return jsonify({
+        "status": "ok",
+        "address": address,
+        "latitude": latitude,
+        "longitude": longitude
+    })
+
+
+
+@app.route("/api/industry")
+def industry_api():
+    home = get_home()
+
+    if (
+        not home
+        or home["latitude"] is None
+        or home["longitude"] is None
+    ):
+        return jsonify({
+            "error": "Сначала выбери дом на карте"
+        }), 400
+
+    try:
+        sources = get_industrial_sources(
+            home["latitude"],
+            home["longitude"]
+        )
+
+        weather = get_weather()
+        wind = None
+
+        if weather.get("status") == "ok":
+            direction = weather.get("wind_direction")
+            speed = weather.get("wind_speed")
+
+            if direction is not None and speed is not None:
+                wind = {
+                    "direction": direction,
+                    "speed": speed,
+                    "time": weather.get("timestamp")
+                }
+
+                for source in sources:
+                    source["wind_analysis"] = analyze_wind(
+                        source, home, direction, speed
+                    )
+
+        return jsonify({
+            "status": "ok",
+            "sources": sources,
+            "count": len(sources),
+            "wind": wind
+        })
+
+    except (OSError, ValueError, KeyError):
+        app.logger.exception("Ошибка анализа предприятий")
+        return jsonify({
+            "error": "Не удалось выполнить анализ"
+        }), 500
 
 
 if __name__ == "__main__":

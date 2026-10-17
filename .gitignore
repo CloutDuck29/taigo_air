@@ -5,6 +5,6 @@ __pycache__/
 .DS_Store
 .env
 
-# Локальная база данных
 data/*.db
 data/*.db-*
+data/industry_cache.json
