@@ -1,5 +1,5 @@
-
-async function calculateForecast() {
+let forecastInProgress = false;
+async function calculateForecast(save = false) {
     const status = document.getElementById("forecast-status");
     const table = document.getElementById("forecast-table");
 
@@ -15,12 +15,19 @@ async function calculateForecast() {
         return;
     }
 
-    status.textContent = "Выполняется расчёт...";
+if (forecastInProgress) {
+    return;
+}
+
+forecastInProgress = true;
+status.textContent = save
+    ? "Расчёт и сохранение прогноза..."
+    : "Автоматическое обновление прогноза...";
 
     try {
-        const response = await fetch(
-            `/api/forecast?ach=${encodeURIComponent(ach)}`
-        );
+const response = await fetch(
+    `/api/forecast?ach=${encodeURIComponent(ach)}&save=${save ? 1 : 0}`
+);
 
         const data = await response.json();
 
@@ -99,15 +106,46 @@ async function calculateForecast() {
         }
 
 
-        status.textContent =
-            "Сценарный прогноз рассчитан.";
+status.textContent = save
+    ? "Прогноз рассчитан и сохранён в историю."
+    : "Прогноз автоматически обновлён.";
 
-    } catch (error) {
-        status.textContent = error.message;
-        console.error(error);
-    }
+} catch (error) {
+    status.textContent = error.message;
+    console.error(error);
+} finally {
+    forecastInProgress = false;
+}
 }
 
+
+// Ручной расчёт с сохранением в SQLite
 document.getElementById(
     "calculate-forecast"
-).addEventListener("click", calculateForecast);
+).addEventListener("click", () => {
+    calculateForecast(true);
+});
+
+// Автоматический расчёт при открытии страницы
+calculateForecast(false);
+
+// Обновляем каждые 60 секунд
+setInterval(() => {
+    if (!document.hidden) {
+        calculateForecast(false);
+    }
+}, 60000);
+
+// Обновляем при возвращении на вкладку
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+        calculateForecast(false);
+    }
+});
+
+// Обновляем при изменении кратности воздухообмена
+document.getElementById(
+    "air-exchange"
+).addEventListener("change", () => {
+    calculateForecast(false);
+});

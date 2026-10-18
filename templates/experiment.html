@@ -1,0 +1,110 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>TaigoAir — Эксперимент</title>
+
+    <script
+        src="{{ url_for('static', filename='js/experiment.js') }}"
+        defer>
+    </script>
+</head>
+<body>
+
+<h1>TaigoExperiment</h1>
+<p>Сравнение прогноза с результатами проветривания.</p>
+
+<p>
+    <a href="/experiment/history">
+        История экспериментов
+    </a>
+</p>
+
+<nav>
+    <a href="/">Главная</a> |
+    <a href="/map">Карта</a> |
+    <a href="/forecast">Прогноз</a>
+</nav>
+
+<hr>
+
+<h2>Проведение эксперимента</h2>
+
+<p>
+    Пока используются показания симулятора.
+    Они не подтверждают точность модели
+    на реальных измерениях.
+</p>
+
+<button id="start-experiment">
+    Начать эксперимент
+</button>
+
+<p>
+    ID эксперимента:
+    <strong id="experiment-id">—</strong>
+</p>
+
+<p>
+    <label for="actual-minutes">
+        Продолжительность проветривания, мин:
+    </label>
+
+    <input
+        id="actual-minutes"
+        type="number"
+        min="0.1"
+        max="120"
+        step="0.1"
+        value="15"
+    >
+</p>
+
+<button id="finish-experiment" disabled>
+    Завершить эксперимент
+</button>
+
+<p id="experiment-status">
+    Эксперимент ещё не начат.
+</p>
+
+<hr>
+
+<h2>Как тестировать</h2>
+
+<ol>
+    <li>Нажми «Начать эксперимент».</li>
+    <li>Открой главную страницу в другой вкладке.</li>
+    <li>Измени CO₂, PM2.5 и температуру в симуляторе.</li>
+    <li>Вернись сюда и укажи длительность.</li>
+    <li>Нажми «Завершить эксперимент».</li>
+</ol>
+
+<h2>Результат</h2>
+<p id="experiment-result">
+    Пока нет завершённого эксперимента.
+</p>
+
+
+<h3>Сравнение прогноза и показаний</h3>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>Показатель</th>
+            <th>Прогноз</th>
+            <th>После эксперимента</th>
+            <th>Абсолютная ошибка</th>
+        </tr>
+    </thead>
+    <tbody id="comparison-table"></tbody>
+</table>
+
+<p id="comparison-status"></p>
+
+
+</body>
+</html>

@@ -260,6 +260,34 @@
     <a href="/settings">Настройки TaigoAir</a>
 </p>
 
+
+<hr>
+
+<section>
+    <h2>Режим проветривания</h2>
+
+    <label for="window-mode">
+        Как открыто окно:
+    </label>
+
+    <select id="window-mode">
+        <option value="closed">Закрыто</option>
+        <option value="micro">Микропроветривание</option>
+        <option value="tilt">Откинуто</option>
+        <option value="open">Распахнуто</option>
+    </select>
+
+    <p id="window-mode-status">
+        Загрузка режима окна...
+    </p>
+</section>
+
+<script
+    src="{{ url_for('static', filename='js/window_mode.js') }}"
+    defer>
+</script>
+
+
 </body>
 </html>
 

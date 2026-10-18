@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>TaigoAir — История экспериментов</title>
+</head>
+<body>
+
+<h1>История TaigoExperiment</h1>
+
+<nav>
+    <a href="/experiment">Эксперимент</a> |
+    <a href="/">Главная</a>
+</nav>
+
+<hr>
+
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Начало</th>
+            <th>Завершение</th>
+            <th>Статус</th>
+            <th>Длительность</th>
+            <th>CO₂ до / после</th>
+            <th>PM2.5 до / после</th>
+            <th>Температура до / после</th>
+            <th>Результаты</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for e in experiments %}
+        <tr>
+            <td>{{ e.id }}</td>
+            <td>{{ e.started_at }}</td>
+            <td>{{ e.ended_at or "—" }}</td>
+            <td>
+                {{ "Выполняется" if e.status == "running"
+                   else "Завершён" }}
+            </td>
+            <td>
+                {{ e.actual_minutes if e.actual_minutes is not none
+                   else "—" }}
+            </td>
+            <td>{{ e.initial_co2 }} / {{ e.final_co2 if e.final_co2 is not none else "—" }}</td>
+            <td>{{ e.initial_pm25 }} / {{ e.final_pm25 if e.final_pm25 is not none else "—" }}</td>
+            <td>{{ e.initial_temperature }} / {{ e.final_temperature if e.final_temperature is not none else "—" }}</td>
+            <td>
+                {% if e.status == "completed" %}
+                <a href="/api/experiment/results/{{ e.id }}">
+                    Посмотреть сравнение
+                </a>
+                {% else %}
+                В процессе
+                {% endif %}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="9">Экспериментов пока нет.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+</body>
+</html>

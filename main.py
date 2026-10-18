@@ -6,6 +6,7 @@ from services.industry import get_industrial_sources
 import requests
 from flask import Flask, render_template, jsonify, request
 from services.geocoding import get_address
+from services.ventilation import estimate_ventilation
 from services.dispersion import calculate_plume
 from services.weather import get_weather
 from services.wind_analysis import analyze_wind
@@ -22,7 +23,12 @@ from services.database import (
     save_forecast_run,
     get_forecast_runs,
     get_settings,
-    save_settings
+    save_settings,
+    start_experiment,
+    finish_experiment,
+    get_experiments,
+    get_experiment,
+    set_window_mode
 )
 
 app = Flask(__name__)
@@ -178,17 +184,29 @@ def forecast_api():
 
         forecast["recommendation"] = recommendation
 
-        run_id = save_forecast_run(
-            home=home,
-            sensors=sensors,
-            air=air,
-            weather=weather,
-            forecast=forecast
-        )
+        # По умолчанию сохраняем для совместимости
+        # с существующими запросами.
+        save_result = request.args.get("save", "1")
 
-        forecast["run_id"] = run_id
+        if save_result not in ("0", "1"):
+            return jsonify({
+                "error": "Параметр save должен быть 0 или 1"
+            }), 400
+
+        if save_result == "1":
+            run_id = save_forecast_run(
+                home=home,
+                sensors=sensors,
+                air=air,
+                weather=weather,
+                forecast=forecast
+            )
+            forecast["run_id"] = run_id
+        else:
+            forecast["run_id"] = None
 
         return jsonify(forecast)
+
 
     except (ValueError, TypeError) as error:
         return jsonify({"error": str(error)}), 400
@@ -724,6 +742,314 @@ def save_map_apartment():
         "ceiling_height": ceiling_height
     })
 
+@app.route("/research")
+def research_page():
+    return render_template("research.html")
+
+
+@app.route("/api/experiment/start", methods=["POST"])
+def experiment_start_api():
+    home = get_home()
+
+    if not home or not home.get("room_area"):
+        return jsonify({
+            "error": "Сначала настрой квартиру"
+        }), 400
+
+    sensors = get_sensor_data()
+
+    # Используем существующий расчёт прогноза
+    # без сохранения в историю прогнозов.
+    with app.test_request_context(
+        "/api/forecast?save=0"
+    ):
+        response = forecast_api()
+
+    # forecast_api обычно возвращает Flask Response.
+    # При ошибке может возвращать (Response, status_code).
+    if isinstance(response, tuple):
+        response_data, status_code = response
+        return response_data, status_code
+
+    forecast = response.get_json()
+
+    try:
+        experiment_id = start_experiment(
+            home, sensors, forecast
+        )
+
+        return jsonify({
+            "status": "ok",
+            "experiment_id": experiment_id,
+            "message": "Эксперимент начат"
+        })
+
+    except ValueError as error:
+        return jsonify({
+            "error": str(error)
+        }), 400
+
+
+@app.route("/api/experiment/finish", methods=["POST"])
+def experiment_finish_api():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "Некорректные данные"
+        }), 400
+
+    try:
+        experiment_id = int(data["experiment_id"])
+        actual_minutes = float(data["actual_minutes"])
+
+        import math
+
+        if experiment_id <= 0:
+            raise ValueError("Некорректный ID эксперимента")
+
+        if (
+            not math.isfinite(actual_minutes)
+            or not 0 < actual_minutes <= 120
+        ):
+            raise ValueError(
+                "Продолжительность: от 0 до 120 минут"
+            )
+
+        sensors = get_sensor_data()
+
+        finish_experiment(
+            experiment_id=experiment_id,
+            sensors=sensors,
+            actual_minutes=actual_minutes
+        )
+
+        return jsonify({
+            "status": "ok",
+            "message": "Эксперимент завершён",
+            "experiment_id": experiment_id
+        })
+
+    except (ValueError, TypeError, KeyError) as error:
+        return jsonify({
+            "error": str(error)
+        }), 400
+
+
+@app.route("/experiment")
+def experiment_page():
+    return render_template("experiment.html")
+
+
+@app.route("/experiment/history")
+def experiment_history_page():
+    experiments = get_experiments(limit=100)
+
+    return render_template(
+        "experiment_history.html",
+        experiments=experiments
+    )
+
+
+@app.route("/api/experiment/active")
+def experiment_active_api():
+    experiments = get_experiments(limit=100)
+
+    active = next(
+        (
+            experiment
+            for experiment in experiments
+            if experiment["status"] == "running"
+        ),
+        None
+    )
+
+    if active is None:
+        return jsonify({
+            "status": "ok",
+            "experiment": None
+        })
+
+    return jsonify({
+        "status": "ok",
+        "experiment": {
+            "id": active["id"],
+            "started_at": active["started_at"],
+            "address": active["address"]
+        }
+    })
+
+
+@app.route("/api/experiment/results/<int:experiment_id>")
+def experiment_results_api(experiment_id):
+    import math
+
+    experiment = get_experiment(experiment_id)
+
+    if experiment is None:
+        return jsonify({
+            "error": "Эксперимент не найден"
+        }), 404
+
+    if experiment["status"] != "completed":
+        return jsonify({
+            "error": "Эксперимент ещё не завершён"
+        }), 409
+
+    minutes = experiment["actual_minutes"]
+    results = json.loads(
+        experiment["predicted_results_json"]
+    )
+
+    if not results or minutes is None:
+        return jsonify({
+            "error": "Недостаточно данных для сравнения"
+        }), 422
+
+    results.sort(key=lambda item: item["minutes"])
+
+    # Используем прогноз только в рассчитанном диапазоне.
+    if not results[0]["minutes"] <= minutes <= results[-1]["minutes"]:
+        return jsonify({
+            "status": "no_comparison",
+            "message": (
+                "Эксперимент сохранён, но сравнение доступно "
+                "только для длительности от "
+                f"{results[0]['minutes']} до "
+                f"{results[-1]['minutes']} минут."
+            )
+        })
+
+    def predicted_value(field):
+        for point in results:
+            if point["minutes"] == minutes:
+                return float(point[field])
+
+        for left, right in zip(results, results[1:]):
+            if left["minutes"] < minutes < right["minutes"]:
+                fraction = (
+                    (minutes - left["minutes"])
+                    / (right["minutes"] - left["minutes"])
+                )
+
+                return (
+                    float(left[field])
+                    + fraction
+                    * (float(right[field]) - float(left[field]))
+                )
+
+        raise ValueError("Нет прогнозного значения")
+
+    fields = {
+        "co2": ("CO₂", "ppm", "final_co2"),
+        "pm25": ("PM2.5", "мкг/м³", "final_pm25"),
+        "temperature": (
+            "Температура", "°C", "final_temperature"
+        )
+    }
+
+    comparison = []
+
+    try:
+        for field, (name, unit, actual_key) in fields.items():
+            predicted = predicted_value(field)
+            actual = float(experiment[actual_key])
+
+            if not math.isfinite(actual):
+                raise ValueError("Некорректные показания")
+
+            comparison.append({
+                "name": name,
+                "unit": unit,
+                "predicted": round(predicted, 2),
+                "actual": round(actual, 2),
+                "error": round(abs(actual - predicted), 2)
+            })
+
+    except (TypeError, ValueError, KeyError) as error:
+        return jsonify({
+            "error": str(error)
+        }), 422
+
+    return jsonify({
+        "status": "ok",
+        "experiment_id": experiment_id,
+        "actual_minutes": minutes,
+        "input_mode": experiment["input_mode"],
+        "comparison": comparison
+    })
+
+
+@app.route("/api/ventilation")
+def ventilation_api():
+    home = get_home()
+
+    if home is None:
+        return jsonify({
+            "error": "Сначала настрой квартиру"
+        }), 400
+
+    weather = get_weather()
+
+    direction = None
+    speed = None
+
+    if weather.get("status") == "ok":
+        direction = weather.get("wind_direction")
+        speed = weather.get("wind_speed")
+
+    try:
+        result = estimate_ventilation(
+            window_mode=home.get("window_mode", "closed"),
+            window_direction=home["window_direction"],
+            wind_direction=direction,
+            wind_speed=speed,
+            floor=home["floor"]
+        )
+
+        return jsonify(result)
+
+    except (ValueError, TypeError) as error:
+        return jsonify({
+            "error": str(error)
+        }), 400
+
+
+@app.route("/api/window-mode", methods=["GET", "POST"])
+def window_mode_api():
+    if request.method == "GET":
+        home = get_home()
+
+        if home is None:
+            return jsonify({
+                "error": "Сначала настрой квартиру"
+            }), 400
+
+        return jsonify({
+            "status": "ok",
+            "window_mode": home.get("window_mode", "closed")
+        })
+
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "Некорректные данные"
+        }), 400
+
+    try:
+        mode = data["window_mode"]
+        set_window_mode(mode)
+
+        return jsonify({
+            "status": "ok",
+            "window_mode": mode
+        })
+
+    except (KeyError, ValueError) as error:
+        return jsonify({
+            "error": str(error)
+        }), 400
 
 
 if __name__ == "__main__":

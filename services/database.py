@@ -49,6 +49,21 @@ def init_db():
             )
         """)
 
+        # Добавляем режим окна в существующую базу
+        columns = {
+            row["name"]
+            for row in connection.execute(
+                "PRAGMA table_info(homes)"
+            ).fetchall()
+        }
+
+        if "window_mode" not in columns:
+            connection.execute("""
+                ALTER TABLE homes
+                ADD COLUMN window_mode TEXT NOT NULL
+                DEFAULT 'closed'
+            """)
+
 
         connection.execute("""
             CREATE TABLE IF NOT EXISTS forecast_runs (
@@ -81,6 +96,32 @@ def init_db():
                 max_temperature_drop REAL NOT NULL,
                 outdoor_co2 REAL NOT NULL,
                 air_changes_per_hour REAL NOT NULL
+            )
+        """)
+
+
+        # Новая таблица TaigoExperiment
+        connection.execute("""
+            CREATE TABLE IF NOT EXISTS experiments (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                started_at TEXT NOT NULL,
+                ended_at TEXT,
+                status TEXT NOT NULL DEFAULT 'running',
+
+                address TEXT,
+                input_mode TEXT,
+                air_changes_per_hour REAL,
+
+                initial_co2 REAL,
+                initial_pm25 REAL,
+                initial_temperature REAL,
+
+                predicted_results_json TEXT NOT NULL,
+
+                actual_minutes REAL,
+                final_co2 REAL,
+                final_pm25 REAL,
+                final_temperature REAL
             )
         """)
 
@@ -266,3 +307,123 @@ def save_settings(settings):
         """, tuple(
             settings[key] for key in DEFAULT_SETTINGS
         ))
+
+
+
+def start_experiment(home, sensors, forecast):
+    """Сохраняет начальные данные и прогноз."""
+
+    with get_connection() as connection:
+        active = connection.execute("""
+            SELECT id FROM experiments
+            WHERE status = 'running'
+            LIMIT 1
+        """).fetchone()
+
+        if active:
+            raise ValueError(
+                "Сначала заверши текущий эксперимент"
+            )
+
+        cursor = connection.execute("""
+            INSERT INTO experiments (
+                started_at, status, address, input_mode,
+                air_changes_per_hour,
+                initial_co2, initial_pm25,
+                initial_temperature, predicted_results_json
+            )
+            VALUES (?, 'running', ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            datetime.now().isoformat(timespec="seconds"),
+            home.get("address"),
+            sensors.get("mode"),
+            forecast.get("air_changes_per_hour"),
+            sensors.get("co2"),
+            sensors.get("pm25"),
+            sensors.get("temperature_inside"),
+            json.dumps(
+                forecast.get("results", []),
+                ensure_ascii=False
+            )
+        ))
+
+        return cursor.lastrowid
+
+
+def finish_experiment(experiment_id, sensors, actual_minutes):
+    """Записывает итоговые показатели эксперимента."""
+
+    with get_connection() as connection:
+        cursor = connection.execute("""
+            UPDATE experiments
+            SET
+                ended_at = ?,
+                status = 'completed',
+                actual_minutes = ?,
+                final_co2 = ?,
+                final_pm25 = ?,
+                final_temperature = ?
+            WHERE id = ? AND status = 'running'
+        """, (
+            datetime.now().isoformat(timespec="seconds"),
+            actual_minutes,
+            sensors.get("co2"),
+            sensors.get("pm25"),
+            sensors.get("temperature_inside"),
+            experiment_id
+        ))
+
+        if cursor.rowcount != 1:
+            raise ValueError(
+                "Активный эксперимент не найден"
+            )
+
+
+def get_experiments(limit=100):
+    """Возвращает историю экспериментов."""
+
+    with get_connection() as connection:
+        rows = connection.execute("""
+            SELECT *
+            FROM experiments
+            ORDER BY id DESC
+            LIMIT ?
+        """, (limit,)).fetchall()
+
+    return [dict(row) for row in rows]
+
+
+def get_experiment(experiment_id):
+    """Получает один эксперимент по ID."""
+
+    with get_connection() as connection:
+        row = connection.execute("""
+            SELECT *
+            FROM experiments
+            WHERE id = ?
+        """, (experiment_id,)).fetchone()
+
+    return dict(row) if row else None
+
+
+WINDOW_MODES = {
+    "closed": "Закрыто",
+    "micro": "Микропроветривание",
+    "tilt": "Откинуто",
+    "open": "Распахнуто"
+}
+
+
+def set_window_mode(mode):
+    if mode not in WINDOW_MODES:
+        raise ValueError("Неизвестный режим окна")
+
+    with get_connection() as connection:
+        cursor = connection.execute("""
+            UPDATE homes
+            SET window_mode = ?
+            WHERE id = 1
+        """, (mode,))
+
+        if cursor.rowcount != 1:
+            raise ValueError("Сначала настрой квартиру")

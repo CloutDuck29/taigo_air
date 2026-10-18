@@ -122,10 +122,16 @@ apartmentForm.addEventListener("submit", async (event) => {
             "map-status"
         ).textContent = "Точка и параметры сохранены.";
 
-        apartmentStatus.textContent =
-            "Квартира успешно сохранена!";
 
-        updateWindowArrow();
+apartmentStatus.textContent =
+    "Квартира успешно сохранена!";
+
+updateWindowArrow();
+
+// Пересчитываем расстояния и анализ ветра
+if (typeof loadIndustry === "function") {
+    await loadIndustry();
+}
 
     } catch (error) {
         apartmentStatus.textContent = error.message;

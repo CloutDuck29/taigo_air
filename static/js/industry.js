@@ -114,7 +114,18 @@ async function loadIndustry() {
     }
 }
 
-// Кнопка загрузки предприятий
-document.getElementById(
-    "load-industry"
-).addEventListener("click", loadIndustry);
+
+const industryButton = document.getElementById("load-industry");
+
+// Кнопку оставляем для ручного обновления при необходимости
+if (industryButton) {
+    industryButton.textContent = "Обновить данные";
+
+    industryButton.addEventListener(
+        "click",
+        loadIndustry
+    );
+}
+
+// Автоматическая загрузка после открытия страницы
+loadIndustry();
