@@ -52,7 +52,9 @@ def forecast_ventilation(
         raise ValueError("Неверные размеры помещения")
 
     if not 0 < air_changes_per_hour <= 30:
-        raise ValueError("Кратность воздухообмена должна быть от 0 до 30")
+        raise ValueError(
+            "Кратность воздухообмена должна быть больше 0 и не выше 30"
+        )
 
     if min(indoor_co2, indoor_pm25, outdoor_pm25, outdoor_co2) < 0:
         raise ValueError("Концентрации не могут быть отрицательными")
@@ -78,16 +80,23 @@ def forecast_ventilation(
             indoor_temperature - outdoor_temperature
         ) * factor
 
-        # Тепловая энергия, вынесенная воздухообменом,
-        # при фиксированной разнице температур.
+
+        # Энергия, вынесенная воздухообменом,
+        # с учётом охлаждения воздуха по модели.
+        # Не учитываем стены, мебель и отопление.
+        temperature_difference = (
+            indoor_temperature - outdoor_temperature
+        )
+
         heat_loss_wh = (
             AIR_DENSITY
             * AIR_HEAT_CAPACITY
-            * air_flow_m3_h
-            * hours
-            * max(indoor_temperature - outdoor_temperature, 0)
+            * volume
+            * max(temperature_difference, 0)
+            * (1 - factor)
             / 3600
         )
+
 
         results.append({
             "minutes": minutes,

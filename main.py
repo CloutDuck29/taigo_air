@@ -12,7 +12,10 @@ from services.weather import get_weather
 from services.wind_analysis import analyze_wind
 from services.air_quality import get_air_quality
 from services.forecast import forecast_ventilation
-from services.recommendations import get_recommendation
+from services.recommendations import (
+    get_recommendation,
+    get_scenario_recommendation
+)
 from services.sensors import get_sensor_data, update_sensor_data
 from services.database import (
     init_db,
@@ -98,7 +101,7 @@ def forecast_export():
 
     return Response(
         "\ufeff" + output.getvalue(),
-        mimetype="text/csv; charset=utf-8",
+        mimetype="text/csv",
         headers={
             "Content-Disposition":
                 "attachment; filename=taigoair_forecasts.csv"
@@ -116,8 +119,26 @@ def forecast_api():
         }), 400
 
     sensors = get_sensor_data()
-    air = get_air_quality()
-    weather = get_weather()
+
+    try:
+        air = get_air_quality()
+        weather = get_weather()
+
+    except Exception:
+        app.logger.exception(
+            "Ошибка получения наружных данных"
+        )
+
+        return jsonify({
+            "status": "unavailable",
+            "error": (
+                "Наружные данные временно недоступны. "
+                "Прогноз проветривания не рассчитан."
+            ),
+            "scenarios": [],
+            "calibrated": False
+        }), 503
+
 
     if air.get("status") != "ok":
         return jsonify({
@@ -166,7 +187,7 @@ def forecast_api():
             "indoor": sensors.get("mode"),
             "outdoor_pm25": "Open-Meteo Air Quality",
             "outdoor_temperature": "Open-Meteo Weather",
-            "outdoor_co2": "Assumed 420 ppm"
+            "outdoor_co2": f"Предполагаемый наружный CO₂: {settings['outdoor_co2']:g} ppm"
         }
 
 
@@ -1050,6 +1071,204 @@ def window_mode_api():
         return jsonify({
             "error": str(error)
         }), 400
+
+
+@app.route("/api/forecast/scenarios")
+def forecast_scenarios_api():
+    home = get_home()
+    settings = get_settings()
+
+    if not home or not home.get("room_area") or not home.get("ceiling_height"):
+        return jsonify({
+            "error": "Сначала настрой квартиру"
+        }), 400
+
+    sensors = get_sensor_data()
+
+
+    if home.get("window_mode", "closed") == "closed":
+        indoor_co2 = sensors.get("co2")
+        indoor_pm25 = sensors.get("pm25")
+
+        if indoor_co2 is None or indoor_pm25 is None:
+            recommendation = {
+                "decision": "Недостаточно данных",
+                "recommended_minutes": None,
+                "reason": (
+                    "Не удалось получить текущие показатели "
+                    "CO₂ и PM2.5."
+                )
+            }
+        else:
+            co2_target = float(
+                settings.get("co2_target", 1000)
+            )
+            pm25_limit = float(
+                settings.get("pm25_limit", 35)
+            )
+
+            co2_exceeded = (
+                float(indoor_co2) > co2_target
+            )
+            pm25_exceeded = (
+                float(indoor_pm25) > pm25_limit
+            )
+
+            if co2_exceeded or pm25_exceeded:
+                recommendation = {
+                    "decision": "Есть превышение заданных порогов",
+                    "recommended_minutes": None,
+                    "reason": (
+                        "Один или несколько показателей "
+                        "превышают заданные пороги. "
+                        "Выбери режим открытия окна, "
+                        "чтобы оценить варианты проветривания "
+                        "с учётом наружного воздуха."
+                    )
+                }
+            else:
+                recommendation = {
+                    "decision": "Проветривание не требуется",
+                    "recommended_minutes": 0,
+                    "reason": (
+                        "CO₂ и PM2.5 находятся в пределах "
+                        "заданных порогов. По этим двум "
+                        "критериям проветривание сейчас "
+                        "не требуется."
+                    )
+                }
+
+        return jsonify({
+            "status": "closed",
+            "window_mode": "closed",
+            "window_label": "Закрыто",
+            "message": "Режим проветривания не выбран.",
+            "recommendation": recommendation,
+            "scenarios": [],
+            "calibrated": False
+        })
+
+    # Наружные данные запрашиваем только тогда,
+    # когда выбран режим проветривания.
+
+
+    try:
+        air = get_air_quality()
+        weather = get_weather()
+
+    except Exception:
+        app.logger.exception(
+            "Ошибка получения наружных данных"
+        )
+
+        return jsonify({
+            "status": "unavailable",
+            "error": (
+                "Наружные данные временно недоступны. "
+                "Прогноз проветривания не рассчитан."
+            ),
+            "scenarios": [],
+            "calibrated": False
+        }), 503
+
+
+    if air.get("status") != "ok":
+        return jsonify({
+            "error": "Наружное загрязнение недоступно"
+        }), 503
+
+    if weather.get("status") != "ok":
+        return jsonify({
+            "error": "Погодные данные недоступны"
+        }), 503
+
+
+    try:
+        ventilation = estimate_ventilation(
+            window_mode=home.get("window_mode", "closed"),
+            window_direction=home["window_direction"],
+            wind_direction=weather.get("wind_direction"),
+            wind_speed=weather.get("wind_speed"),
+            floor=home["floor"]
+        )
+
+        required = [
+            sensors.get("co2"),
+            sensors.get("pm25"),
+            sensors.get("temperature_inside"),
+            air.get("pm25"),
+            weather.get("temperature")
+        ]
+
+        if any(value is None for value in required):
+            return jsonify({
+                "error": "Недостаточно данных для прогноза"
+            }), 422
+
+        low = ventilation["ach_min"]
+        high = ventilation["ach_max"]
+        middle = (low + high) / 2
+
+        scenario_definitions = [
+            ("low", "Слабый воздухообмен", low),
+            ("middle", "Средний воздухообмен", middle),
+            ("high", "Интенсивный воздухообмен", high)
+        ]
+
+        scenarios = []
+
+        for code, label, ach in scenario_definitions:
+            forecast = forecast_ventilation(
+                indoor_co2=float(sensors["co2"]),
+                indoor_pm25=float(sensors["pm25"]),
+                indoor_temperature=float(
+                    sensors["temperature_inside"]
+                ),
+                outdoor_pm25=float(air["pm25"]),
+                outdoor_temperature=float(
+                    weather["temperature"]
+                ),
+                room_area=float(home["room_area"]),
+                ceiling_height=float(home["ceiling_height"]),
+                air_changes_per_hour=ach,
+                outdoor_co2=settings["outdoor_co2"]
+            )
+
+            scenarios.append({
+                "code": code,
+                "label": label,
+                "ach": ach,
+                "results": forecast["results"]
+            })
+
+
+
+        scenario_recommendation = get_scenario_recommendation(
+            scenarios=scenarios,
+            indoor_co2=float(sensors["co2"]),
+            indoor_pm25=float(sensors["pm25"]),
+            outdoor_pm25=float(air["pm25"]),
+            indoor_temperature=float(
+                sensors["temperature_inside"]
+            ),
+            settings=settings
+        )
+
+        return jsonify({
+            "status": "ok",
+            "window_mode": ventilation["window_mode"],
+            "window_label": ventilation["window_label"],
+            "wind_exposure": ventilation["wind_exposure"],
+            "calibrated": False,
+            "scenarios": scenarios,
+            "recommendation": scenario_recommendation,
+            "limitations": ventilation["limitations"]
+
+        })
+
+    except (ValueError, TypeError, KeyError) as error:
+        return jsonify({"error": str(error)}), 400
+
 
 
 if __name__ == "__main__":

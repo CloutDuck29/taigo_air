@@ -3,15 +3,24 @@ import sqlite3
 import json
 from datetime import datetime
 from pathlib import Path
-
+from contextlib import contextmanager
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "taigoair.db"
 
 
+
+@contextmanager
 def get_connection():
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+
     connection = sqlite3.connect(DB_PATH)
     connection.row_factory = sqlite3.Row
-    return connection
+
+    try:
+        with connection:
+            yield connection
+    finally:
+        connection.close()
+
 
 
 def init_db():

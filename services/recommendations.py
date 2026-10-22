@@ -118,3 +118,126 @@ def get_recommendation(
             "или другой момент времени"
         ]
     }
+
+def get_scenario_recommendation(scenarios, indoor_co2,
+                                indoor_pm25, outdoor_pm25,
+                                indoor_temperature, settings):
+    """
+    Сравнение трёх сценариев воздухообмена.
+    Диапазоны ACH предварительные и не откалиброваны.
+    """
+
+    co2_target = settings.get("co2_target", 1000)
+    pm25_limit = settings.get("pm25_limit", 35)
+    max_drop = settings.get("max_temperature_drop", 3)
+
+
+    if indoor_co2 <= co2_target and indoor_pm25 <= pm25_limit:
+        return {
+            "decision": "Проветривание не требуется",
+            "recommended_minutes": 0,
+            "reason": (
+                "Текущие CO₂ и PM2.5 не превышают "
+                "заданные пороги. Дополнительное "
+                "проветривание по этим критериям "
+                "сейчас не требуется."
+            ),
+            "comparisons": []
+        }
+
+
+    if not scenarios:
+        return {
+            "decision": "Нет данных",
+            "recommended_minutes": None,
+            "reason": "Сценарии не рассчитаны"
+        }
+
+    # Временные интервалы, присутствующие у всех сценариев
+    common_minutes = set(
+        point["minutes"] for point in scenarios[0]["results"]
+    )
+
+    for scenario in scenarios[1:]:
+        common_minutes &= {
+            point["minutes"] for point in scenario["results"]
+        }
+
+    comparisons = []
+
+    for minutes in sorted(common_minutes):
+        suitable = []
+
+        for scenario in scenarios:
+            point = next(
+                p for p in scenario["results"]
+                if p["minutes"] == minutes
+            )
+
+            temperature_drop = (
+                indoor_temperature - point["temperature"]
+            )
+
+            if (
+                point["co2"] <= co2_target
+                and point["pm25"] <= pm25_limit
+                and temperature_drop <= max_drop
+            ):
+                suitable.append(scenario["code"])
+
+        comparisons.append({
+            "minutes": minutes,
+            "suitable": suitable,
+            "total": len(scenarios)
+        })
+
+    all_suitable = [
+        item for item in comparisons
+        if len(item["suitable"]) == len(scenarios)
+    ]
+
+    partly_suitable = [
+        item for item in comparisons
+        if item["suitable"]
+    ]
+
+    if all_suitable:
+        minutes = all_suitable[0]["minutes"]
+
+        return {
+            "decision": "Подходит во всех сценариях",
+            "recommended_minutes": minutes,
+            "reason": (
+                f"На {minutes}-й минуте все три сценария "
+                "удовлетворяют заданным ограничениям "
+                "по CO₂, PM2.5 и охлаждению."
+            ),
+            "comparisons": comparisons
+        }
+
+    if partly_suitable:
+        best = partly_suitable[0]
+
+        return {
+            "decision": "Зависит от воздухообмена",
+            "recommended_minutes": None,
+            "possible_minutes": best["minutes"],
+            "reason": (
+                f"При {best['minutes']} минутах ограничения "
+                "выполняются только в некоторых сценариях. "
+                "Без измерения воздухообмена нельзя "
+                "подтвердить подходящую длительность."
+            ),
+            "comparisons": comparisons
+        }
+
+    return {
+        "decision": "Подходящего сценария нет",
+        "recommended_minutes": None,
+        "reason": (
+            "Ни один из рассчитанных вариантов "
+            "не удовлетворяет одновременно ограничениям "
+            "по CO₂, PM2.5 и охлаждению."
+        ),
+        "comparisons": comparisons
+    }

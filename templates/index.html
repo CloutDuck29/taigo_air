@@ -10,11 +10,60 @@
     <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/weather.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/air_quality.js') }}" defer></script>
+    <script
+    src="{{ url_for('static', filename='js/main_recommendation.js') }}"
+    defer>
+</script>
 
 </head>
 <body>
 
 <h1>TaigoAir</h1>
+
+
+<section>
+    <h2>TaigoRecommend — рекомендации по проветриванию</h2>
+
+    <p>
+        Режим окна:
+        <strong id="main-window-mode">Загрузка...</strong>
+    </p>
+
+
+<p>
+    Датчик открытия окна (симуляция):
+    <strong id="main-window-sensor">Загрузка...</strong>
+</p>
+
+<p id="main-window-warning"></p>
+
+
+    <p>
+        Решение:
+        <strong id="main-recommendation-decision">
+            Рассчитывается...
+        </strong>
+    </p>
+
+    <p>
+        Время проветривания:
+        <strong id="main-recommendation-time">—</strong>
+    </p>
+
+    <p id="main-recommendation-reason"></p>
+
+    <p>
+        <small>
+            Рекомендация основана на предварительных
+            сценариях воздухообмена, не прошедших калибровку.
+        </small>
+    </p>
+
+    <a href="/forecast">Подробный прогноз →</a>
+</section>
+
+<hr>
+
 <h2>Мониторинг качества воздуха</h2>
 
 <p>Режим: <span id="mode">Загрузка...</span></p>
