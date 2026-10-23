@@ -2,341 +2,2156 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#10449a">
+<title>TaigoAir — Главная</title>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
 
-    <title>TaigoAir — Мониторинг</title>
-    <script src="{{ url_for('static', filename='js/dashboard.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/weather.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/air_quality.js') }}" defer></script>
-    <script
-    src="{{ url_for('static', filename='js/main_recommendation.js') }}"
-    defer>
-</script>
+<style>
+
+:root {
+--yellow: #FFC247;
+--green: #79D9A0;
+--blue: #8BD8F5;
+  --white:#fff;
+  --muted:rgba(255,255,255,.76);
+--glass: rgba(27, 40, 46, 0.58);
+  --dark:rgba(36,29,23,.75);
+  --radius:29px;
+}
+
+* { box-sizing:border-box; }
+
+html { scroll-behavior:smooth; }
+
+body {
+  margin: 0;
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont,
+    "SF Pro Display", "Segoe UI", sans-serif;
+  background: transparent;
+
+  height: 100dvh;
+  overflow: hidden;
+}
+
+button,select { font:inherit; }
+button { cursor:pointer; }
+a { color:inherit;text-decoration:none; }
+
+button:focus-visible,
+a:focus-visible,
+select:focus-visible {
+  outline:2px solid var(--yellow);
+  outline-offset:3px;
+}
+
+/* ФОН */
+
+
+
+
+
+
+.background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+
+  background: #10449a;
+}
+
+.background::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(10, 23, 38, 0.22) 0%,
+      rgba(14, 29, 39, 0.17) 55%,
+      rgba(12, 23, 18, 0.27) 100%
+    ),
+    url("/static/images/landscape.jpg");
+
+  background-position: center top;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+
+  filter: blur(5px);
+}
+
+/* Мягкий переход под системной строкой iPhone */
+.background::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+
+  background: linear-gradient(
+    to bottom,
+    #10449a 0%,
+    rgba(16, 68, 154, 0.75) 40%,
+    rgba(16, 68, 154, 0) 100%
+  );
+}
+
+
+
+
+
+/* ОСНОВНОЙ КОНТЕЙНЕР */
+
+
+.app {
+  position: relative;
+  z-index: 1;
+
+  width: 100%;
+  max-width: 480px;
+
+height: calc(
+  100dvh - 132px - env(safe-area-inset-bottom)
+);
+  min-height: 0;
+
+  margin: 0 auto;
+  padding: 0 24px 20px;
+  padding-top: 8px;
+
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: none;
+}
+
+.app::-webkit-scrollbar {
+  display: none;
+}
+
+
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  min-height: 76px;
+  padding-top: calc(env(safe-area-inset-top) + 4px);
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+
+
+.logo {
+  font-size:34px;
+  font-weight:750;
+  letter-spacing:-1.4px;
+}
+
+.icon-button {
+  width:48px;
+  height:48px;
+  border:none;
+  border-radius:50%;
+  background:rgba(62,51,44,.44);
+  color:white;
+  display:grid;
+  place-items:center;
+}
+
+.icon-button svg {
+  width:24px;
+  height:24px;
+}
+
+/* СТЕКЛЯННЫЕ КАРТОЧКИ */
+
+
+.glass {
+  background: var(--glass);
+
+  backdrop-filter: blur(30px) saturate(140%);
+  -webkit-backdrop-filter: blur(30px) saturate(140%);
+
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius);
+
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+
+
+
+.section { margin-bottom:20px; }
+
+.grid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:16px;
+}
+
+/* ОКНО */
+
+.window-card {
+  padding:17px;
+  min-height:192px;
+  display:grid;
+  grid-template-columns:42% minmax(0,1fr);
+  gap:15px;
+}
+
+.window-image {
+  min-height:155px;
+  border-radius:23px;
+  background:rgba(34,35,35,.65);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:var(--yellow);
+}
+
+.window-image svg {
+  width:88%;
+  max-height:150px;
+}
+
+.window-info {
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+}
+
+.window-info h2 {
+  font-size:clamp(18px,4.7vw,23px);
+  line-height:1.15;
+  margin:9px 0 8px;
+}
+
+.subtext {
+  color:var(--muted);
+  font-size:13px;
+  line-height:1.5;
+}
+
+.window-button {
+  margin-top:auto;
+  padding:13px 8px;
+  border:0;
+  border-radius:18px;
+  background:rgba(36,29,22,.55);
+  color:white;
+  font-size:13px;
+  font-weight:600;
+  width:100%;
+}
+
+/* ОСНОВНЫЕ ПОКАЗАТЕЛИ */
+
+.tile {
+  text-align:left;
+  padding:17px;
+  min-height:190px;
+
+  color:white;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+
+  min-width:0;
+  transition:transform .15s ease;
+}
+
+
+.tile-header {
+  width:100%;
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:6px;
+}
+
+.tile h3 {
+  margin:0;
+  font-size:18px;
+  font-weight:700;
+  line-height:1.2;
+  min-width:0;
+}
+
+.tile-icon {
+  flex-shrink:0;
+  font-size:22px;
+  color:var(--yellow);
+}
+
+.tile-value {
+  margin-top:18px;
+  font-size:clamp(19px,5vw,28px);
+  line-height:1.15;
+  font-weight:700;
+  letter-spacing:-.5px;
+  max-width:100%;
+  overflow-wrap:anywhere;
+}
+
+.tile-footer {
+  margin-top:auto;
+  padding-top:13px;
+  width:100%;
+
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:5px;
+
+  font-size:12px;
+  color:var(--muted);
+}
+
+.tile-footer span:last-child {
+  flex-shrink:0;
+  font-size:19px;
+  color:white;
+}
+
+.green { color:var(--green); }
+.blue { color:var(--blue); }
+.yellow { color:var(--yellow); }
+
+/* РЕКОМЕНДАЦИЯ */
+
+.recommendation { padding:21px; }
+
+.recommendation-top {
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin-bottom:15px;
+}
+
+.recommendation-icon {
+  width:43px;
+  height:43px;
+  flex-shrink:0;
+  border-radius:15px;
+
+  background:rgba(255,189,23,.17);
+  color:var(--yellow);
+
+  display:grid;
+  place-items:center;
+  font-size:25px;
+}
+
+.section-label {
+  font-size:13px;
+  color:var(--muted);
+}
+
+.recommendation h3 {
+  font-size:22px;
+  line-height:1.2;
+  margin:0 0 8px;
+}
+
+.recommendation-time {
+  font-size:19px;
+  font-weight:700;
+  color:var(--yellow);
+}
+
+.recommendation-reason {
+  font-size:13px;
+  line-height:1.55;
+  color:rgba(255,255,255,.88);
+  margin:12px 0 17px;
+}
+
+.action {
+  display:block;
+  padding:14px;
+  border:0;
+  border-radius:17px;
+  background:rgba(35,29,23,.68);
+  color:white;
+  font-size:14px;
+  font-weight:600;
+  text-align:center;
+}
+
+.action.primary {
+  background:var(--yellow);
+  color:#291c00;
+}
+
+.action.full { width:100%; }
+
+/* ПОДКЛЮЧЕНИЕ */
+
+.device-strip {
+  padding:16px 18px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  color:white;
+  text-align:left;
+}
+
+.device-dot {
+  width:10px;
+  height:10px;
+  background:var(--green);
+  border-radius:50%;
+  flex-shrink:0;
+}
+
+.device-text {
+  flex:1;
+  min-width:0;
+}
+
+.device-title {
+  font-size:13px;
+  font-weight:650;
+  overflow-wrap:anywhere;
+}
+
+.device-subtitle {
+  font-size:11px;
+  color:var(--muted);
+  margin-top:5px;
+}
+
+.device-arrow {
+  font-size:24px;
+  color:var(--muted);
+}
+
+/* НИЖНЯЯ НАВИГАЦИЯ */
+
+.nav-link {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  font-size:11px;
+  color:white;
+}
+
+.nav-link svg {
+  width:25px;
+  height:25px;
+  stroke-width:1.8;
+}
+
+.nav-link.active {
+  color:var(--yellow);
+  font-weight:650;
+}
+
+/* МОДАЛЬНЫЕ ОКНА */
+
+
+/* ===== ФОН МОДАЛЬНОГО ОКНА ===== */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0);
+  visibility: hidden;
+  pointer-events: none;
+
+  transition:
+    background 0.35s ease,
+    visibility 0s linear 0.4s;
+}
+
+.modal.open {
+  visibility: visible;
+  pointer-events: auto;
+
+  background: rgba(0, 0, 0, 0.45);
+
+  transition:
+    background 0.35s ease,
+    visibility 0s;
+}
+
+/* ===== ВЫЕЗЖАЮЩАЯ ПАНЕЛЬ ===== */
+
+.modal-sheet {
+  transform: translate3d(0, 105%, 0) scale(.97);
+  opacity: 0.92;
+
+  transition:
+    transform 0.52s cubic-bezier(.22, 1, .36, 1),
+    opacity 0.35s ease;
+
+  will-change: transform;
+}
+
+.modal.open .modal-sheet {
+  transform: translate3d(0, 0, 0) scale(1);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal,
+  .modal-sheet {
+    transition: none !important;
+  }
+}
+
+
+.modal-sheet {
+  width:100%;
+  max-width:480px;
+  max-height:88dvh;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+
+  background:rgba(46,37,28,.98);
+  color:white;
+
+  border-radius:30px 30px 0 0;
+  padding:25px 23px calc(30px + env(safe-area-inset-bottom));
+
+  box-shadow:0 -12px 60px rgba(0,0,0,.22);
+}
+
+.modal-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:23px;
+  gap:10px;
+}
+
+.modal-header h2 {
+  font-size:23px;
+  margin:0;
+}
+
+.close-modal {
+  border:0;
+  background:rgba(255,255,255,.13);
+  color:white;
+  width:35px;
+  height:35px;
+  border-radius:50%;
+  font-size:22px;
+  flex-shrink:0;
+}
+
+.detail-row {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+
+  padding:15px 0;
+  border-bottom:1px solid rgba(255,255,255,.11);
+  font-size:14px;
+}
+
+.detail-row strong {
+  text-align:right;
+  font-size:15px;
+  overflow-wrap:anywhere;
+}
+
+.detail-section {
+  font-size:15px;
+  font-weight:650;
+  color:var(--yellow);
+  margin:24px 0 6px;
+}
+
+.modal-note {
+  color:var(--muted);
+  font-size:12px;
+  line-height:1.55;
+  margin-top:15px;
+}
+
+.mode-select {
+  width:100%;
+  padding:15px;
+  margin:13px 0 18px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:16px;
+  background:#382a1d;
+  color:white;
+  font-size:15px;
+}
+
+/* АДАПТАЦИЯ IPHONE */
+
+
+@media (max-width: 390px) {
+  .app {
+    padding-left: 17px;
+    padding-right: 17px;
+    padding-top: 6px;
+  }
+
+  .grid {
+    gap: 12px;
+  }
+
+  .tile {
+    padding: 15px;
+    min-height: 180px;
+  }
+
+  .tile h3 {
+    font-size: 17px;
+  }
+
+  .tile-value {
+    font-size: 20px;
+  }
+
+  .window-card {
+    gap: 11px;
+  }
+
+  .window-info h2 {
+    font-size: 18px;
+  }
+}
+
+@media(max-width:350px) {
+  .app {
+    padding-left:13px;
+    padding-right:13px;
+  }
+
+  .tile h3 { font-size:16px; }
+  .tile-value { font-size:18px; }
+  .window-card { grid-template-columns:39% 1fr; }
+}
+
+@media(min-width:600px) {
+  body { background:#263a42; }
+}
+
+/* Новая стеклянная нижняя навигация */
+
+
+
+.bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+
+  width: calc(100% - 32px);
+  max-width: 448px;
+  z-index: 30;
+
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 2px;
+
+  padding: 12px 8px;
+  border-radius: 28px;
+
+background: rgba(27, 40, 46, 0.58);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+
+backdrop-filter: blur(30px) saturate(100%);
+-webkit-backdrop-filter: blur(30px) saturate(100%);
+
+  box-shadow:
+    0 10px 32px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255,255,255,0.10);
+
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.nav-link {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  color: rgba(255,255,255,0.85);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.nav-link svg {
+  width: 23px;
+  height: 23px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.nav-link.active {
+  color: #ffca39;
+  font-weight: 650;
+}
+
+/* Единый стиль иконок */
+
+.icon-button svg {
+  width: 23px;
+  height: 23px;
+  stroke-width: 1.8;
+}
+
+
+.tile-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 24px;
+  align-items: start;
+  gap: 12px;
+  width: 100%;
+}
+
+.tile-header h3 {
+  min-width: 0;
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.25;
+  font-weight: 650;
+}
+
+.tile-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.tile-icon svg {
+  display: block;
+  width: 21px;
+  height: 21px;
+  stroke-width: 1.7;
+}
+
+.recommendation-icon svg {
+  width: 24px;
+  height: 24px;
+  stroke-width: 1.8;
+}
+
+@media (max-width: 390px) {
+  .tile-header {
+    grid-template-columns: minmax(0, 1fr) 19px;
+    gap: 7px;
+  }
+
+  .tile-header h3 {
+    font-size: 16px;
+  }
+
+  .tile-icon,
+  .tile-icon svg {
+    width: 19px;
+    height: 19px;
+  }
+}
+
+    /* Мягкое исчезновение карточек у нижней границы */
+
+.app {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 calc(100% - 22px),
+    transparent 100%
+  );
+
+  mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 calc(100% - 22px),
+    transparent 100%
+  );
+}
+
+    .bottom-nav::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: -1;
+  pointer-events: none;
+
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(0, 0, 0, 0.10)
+  );
+}
+
+
+/* ===== АНИМАЦИЯ КАРТОЧЕК ===== */
+
+.glass {
+  transition:
+    transform 0.36s cubic-bezier(.22, 1, .36, 1),
+    opacity 0.36s ease,
+    box-shadow 0.36s ease;
+}
+
+/* Анимация появления только для JS */
+
+.motion-ready .glass.reveal-card.is-visible:active {
+  transform: scale(.975);
+  transition-duration: .16s;
+}
+
+/* Учитываем пользователей без анимаций */
+@media (prefers-reduced-motion: reduce) {
+  .glass,
+  .motion-ready .glass.reveal-card {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+.window-button,
+.action,
+.nav-link,
+.icon-button {
+  transition:
+    transform .22s cubic-bezier(.22, 1, .36, 1),
+    opacity .22s ease;
+}
+
+.window-button:active,
+.action:active,
+.nav-link:active,
+.icon-button:active {
+  transform: scale(.96);
+  opacity: .85;
+}
+
+
+/* iOS-подобная карусель при прокрутке */
+
+.scroll-wheel-card {
+  --wheel-scale: 1;
+  --wheel-offset: 0px;
+
+  transform:
+    translate3d(0, var(--wheel-offset), 0)
+    scale(var(--wheel-scale));
+
+  transform-origin: center center;
+  backface-visibility: hidden;
+}
+
+/* Оставляем карточку чёткой во время движения */
+.scroll-wheel-card,
+.scroll-wheel-card.is-visible {
+  opacity: 1;
+}
+
+/* Отключаем анимацию при системном ограничении */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-wheel-card {
+    transform: none !important;
+  }
+}
+
+    .device-strip.scroll-wheel-card {
+  transition: transform 0.25s cubic-bezier(.22, 1, .36, 1);
+}
+
+html {
+  min-height: 100%;
+  background: #10449a;
+}
+
+body {
+  min-height: 100dvh;
+  background: transparent;
+}
+</style>
+
 
 </head>
+
 <body>
 
-<h1>TaigoAir</h1>
-
-
-<section>
-    <h2>TaigoRecommend — рекомендации по проветриванию</h2>
-
-    <p>
-        Режим окна:
-        <strong id="main-window-mode">Загрузка...</strong>
-    </p>
-
-
-<p>
-    Датчик открытия окна (симуляция):
-    <strong id="main-window-sensor">Загрузка...</strong>
-</p>
-
-<p id="main-window-warning"></p>
-
-
-    <p>
-        Решение:
-        <strong id="main-recommendation-decision">
-            Рассчитывается...
-        </strong>
-    </p>
-
-    <p>
-        Время проветривания:
-        <strong id="main-recommendation-time">—</strong>
-    </p>
-
-    <p id="main-recommendation-reason"></p>
-
-    <p>
-        <small>
-            Рекомендация основана на предварительных
-            сценариях воздухообмена, не прошедших калибровку.
-        </small>
-    </p>
-
-    <a href="/forecast">Подробный прогноз →</a>
-</section>
-
-<hr>
-
-<h2>Мониторинг качества воздуха</h2>
-
-<p>Режим: <span id="mode">Загрузка...</span></p>
-<p>Обновлено: <span id="updated">—</span></p>
-<p>Подключение: <span id="connection">Проверка...</span></p>
-
-<hr>
-
-<h3>Качество воздуха</h3>
-<p>CO₂: <span id="co2">—</span> ppm</p>
-<p>PM1: <span id="pm1">—</span> мкг/м³</p>
-<p>PM2.5: <span id="pm25">—</span> мкг/м³</p>
-<p>PM10: <span id="pm10">—</span> мкг/м³</p>
-
-<h4>Предупреждения</h4>
-<p id="warnings">Проверка...</p>
-
-<hr>
-
-<h3>Микроклимат</h3>
-<p>Температура внутри: <span id="temp-inside">—</span> °C</p>
-<p>Температура снаружи: <span id="temp-outside">—</span> °C</p>
-<p>Влажность внутри: <span id="humidity-inside">—</span> %</p>
-<p>Влажность снаружи: <span id="humidity-outside">—</span> %</p>
-<p>Давление внутри: <span id="pressure-inside">—</span> мм рт. ст.</p>
-<p>Давление снаружи: <span id="pressure-outside">—</span> мм рт. ст.</p>
-
-<hr>
-
-
-
-<hr>
-
-<h3>Погода в Омске — Open-Meteo</h3>
-
-<p>Источник: Open-Meteo (погодная модель)</p>
-<p>Местоположение: <span id="weather-location">—</span></p>
-
-<p>
-    Температура:
-    <span id="weather-temperature">—</span> °C
-</p>
-
-<p>
-    Влажность:
-    <span id="weather-humidity">—</span> %
-</p>
-
-<p>
-    Атмосферное давление:
-    <span id="weather-pressure">—</span> гПа
-</p>
-
-<p>
-    Скорость ветра:
-    <span id="weather-wind-speed">—</span> м/с
-</p>
-
-<p>
-    Направление ветра:
-    <span id="weather-wind-direction">—</span> °
-</p>
-
-<p>
-    Время данных:
-    <span id="weather-time">—</span>
-</p>
-
-<p>
-    Статус:
-    <span id="weather-status">Загрузка...</span>
-</p>
-
-<button type="button" onclick="updateWeather()">
-    Обновить погоду
-</button>
-
-
-<hr>
-
-<h3>Наружное загрязнение воздуха</h3>
-
-<p>Источник: Open-Meteo / CAMS</p>
-<p>
-    Тип данных: модельная оценка,
-    не показания датчиков
-</p>
-
-<p>
-    Местоположение:
-    <span id="air-location">—</span>
-</p>
-
-<h4>Взвешенные частицы</h4>
-
-<p>
-    PM2.5:
-    <span id="air-pm25">—</span> мкг/м³
-</p>
-
-<p>
-    PM10:
-    <span id="air-pm10">—</span> мкг/м³
-</p>
-
-<h4>Газообразные загрязнители</h4>
-
-<p>
-    NO₂:
-    <span id="air-no2">—</span> мкг/м³
-</p>
-
-<p>
-    SO₂:
-    <span id="air-so2">—</span> мкг/м³
-</p>
-
-<p>
-    CO:
-    <span id="air-co">—</span> мкг/м³
-</p>
-
-<p>
-    O₃:
-    <span id="air-o3">—</span> мкг/м³
-</p>
-
-<h4>Европейский индекс качества воздуха</h4>
-
-<p>
-    AQI:
-    <span id="air-aqi">—</span>
-</p>
-
-<p>
-    Оценка:
-    <span id="air-assessment">—</span>
-</p>
-
-<p>
-    Время данных:
-    <span id="air-time">—</span>
-</p>
-
-<p>
-    Статус:
-    <span id="air-status">Загрузка...</span>
-</p>
-
-<button type="button" onclick="updateAirQuality()">
-    Обновить загрязнение
-</button>
-
-
-<h3>Устройство</h3>
-<p>Окно: <span id="window">—</span></p>
-<p>Вентилятор: <span id="fan">—</span></p>
-
-<hr>
-
-<button onclick="updateSensors()">Обновить сейчас</button>
-
-<p><small>Показания обновляются каждые 5 секунд.</small></p>
-
-<hr>
-
-<h3>Симулятор датчиков</h3>
-
-<p>
-    Здесь можно изменять показания,
-    пока Arduino не подключена.
-</p>
-
-<form id="simulation-form">
-
-    <p>
-        <label for="sim-co2">CO₂ (ppm):</label>
-        <input
-            id="sim-co2"
-            type="number"
-            min="0"
-            max="10000"
-            value="850"
-            required
-        >
-    </p>
-
-    <p>
-        <label for="sim-pm25">PM2.5 (мкг/м³):</label>
-        <input
-            id="sim-pm25"
-            type="number"
-            min="0"
-            max="1000"
-            value="12"
-            required
-        >
-    </p>
-
-    <p>
-        <label for="sim-temperature">
-            Температура внутри (°C):
-        </label>
-        <input
-            id="sim-temperature"
-            type="number"
-            step="0.1"
-            min="-30"
-            max="60"
-            value="23.5"
-            required
-        >
-    </p>
-
-    <p>
-        <label>
-            <input type="checkbox" id="sim-window">
-            Окно открыто
-        </label>
-    </p>
-
-    <button type="submit">
-        Применить показания
+<div class="background"></div>
+
+<main class="app">
+
+  <!-- ШАПКА -->
+  <header class="header">
+    <div class="logo">TaigoAir</div>
+
+<a href="/settings"
+   class="icon-button"
+   aria-label="Настройки">
+  <i data-lucide="settings-2"></i>
+</a>
+  </header>
+
+  <!-- ОКНО -->
+  <section class="glass window-card section">
+
+    <div class="window-image">
+      <svg viewBox="0 0 160 160"
+           fill="none"
+           stroke="currentColor"
+           stroke-width="6"
+           stroke-linecap="round"
+           stroke-linejoin="round">
+        <rect x="22" y="23" width="86" height="112" rx="9"/>
+        <path d="M40 39L82 56V135L40 113Z"/>
+        <path d="M40 39L28 49V125L82 135"/>
+        <path d="M126 60Q137 47 149 60"/>
+        <path d="M126 83Q137 70 149 83"/>
+        <path d="M126 106Q137 93 149 106"/>
+      </svg>
+    </div>
+
+    <div class="window-info">
+      <div>
+        <h2>Окно в комнате</h2>
+
+        <div class="subtext">
+          Датчик:
+          <strong id="window-sensor">—</strong>
+        </div>
+
+        <div class="subtext">
+          Режим:
+          <strong id="window-mode-label">—</strong>
+        </div>
+      </div>
+
+      <button class="window-button"
+              type="button"
+              onclick="openModal('window-modal')">
+        Управление →
+      </button>
+    </div>
+
+  </section>
+
+  <!-- ОСНОВНЫЕ КАРТОЧКИ -->
+  <div class="grid section">
+
+    <button class="glass tile"
+            type="button"
+            onclick="openModal('air-modal')">
+
+      <div class="tile-header">
+        <h3>Качество воздуха</h3>
+<span class="tile-icon green">
+  <i data-lucide="wind"></i>
+</span>      </div>
+
+      <div class="tile-value green"
+           id="air-quality-label">—</div>
+
+      <div class="tile-footer">
+        <span>Общая оценка</span>
+        <span>↗</span>
+      </div>
     </button>
 
-</form>
+    <button class="glass tile"
+            type="button"
+            onclick="openModal('weather-modal')">
 
-<p id="simulation-result"></p>
+      <div class="tile-header">
+        <h3>Температура воздуха</h3>
+<span class="tile-icon yellow">
+  <i data-lucide="sun"></i>
+</span>
+      </div>
 
-<hr>
-<a href="/history">История измерений</a>
+      <div class="tile-value blue">
+        <span id="outside-temperature">—</span>°C
+      </div>
 
-<hr>
-<a href="/home">Мой дом</a>
+      <div class="tile-footer">
+        <span>Погода</span>
+        <span>↗</span>
+      </div>
+    </button>
 
-<p>
-    <a href="/map">Карта Омска</a>
-</p>
+    <button class="glass tile"
+            type="button"
+            onclick="openModal('co2-modal')">
 
-<p><a href="/forecast">Прогноз проветривания</a></p>
+      <div class="tile-header">
+        <h3>Углекислый газ</h3>
+<span class="tile-icon yellow">
+  <i data-lucide="cloud"></i>
+</span>
+      </div>
 
-<p>
-    <a href="/settings">Настройки TaigoAir</a>
-</p>
+      <div class="tile-value">
+        <span id="main-co2">—</span>
+        <span style="font-size:13px;font-weight:400">ppm</span>
+      </div>
+
+      <div class="tile-footer">
+        <span id="co2-assessment">Проверка...</span>
+        <span>↗</span>
+      </div>
+    </button>
+
+    <button class="glass tile"
+            type="button"
+            onclick="openModal('particles-modal')">
+
+      <div class="tile-header">
+        <h3>Мелкие частицы</h3>
+<span class="tile-icon yellow">
+  <i data-lucide="atom"></i>
+</span>
+      </div>
+
+      <div class="tile-value">
+        <span id="main-pm25">—</span>
+        <span style="font-size:12px;font-weight:400">мкг/м³</span>
+      </div>
+
+      <div class="tile-footer">
+        <span id="pm25-assessment">Проверка...</span>
+        <span>↗</span>
+      </div>
+    </button>
+
+  </div>
+
+  <!-- РЕКОМЕНДАЦИЯ -->
+  <section class="glass recommendation section">
+
+    <div class="recommendation-top">
+<div class="recommendation-icon">
+  <i data-lucide="wind"></i>
+</div>
+        <span class="section-label">
+        Рекомендация по проветриванию
+      </span>
+    </div>
+
+    <h3 id="recommendation-decision">
+      Рассчитываем...
+    </h3>
+
+    <div class="recommendation-time"
+         id="recommendation-time">—</div>
+
+    <p class="recommendation-reason"
+       id="recommendation-reason">
+      Анализируем показатели воздуха.
+    </p>
+
+    <a href="/forecast" class="action full">
+      Подробный прогноз →
+    </a>
+
+  </section>
+
+  <!-- СТАТУС УСТРОЙСТВА -->
+  <button class="glass device-strip section"
+          type="button"
+          onclick="openModal('device-modal')">
+
+    <span class="device-dot" id="device-dot"></span>
+
+    <div class="device-text">
+      <div class="device-title"
+           id="device-connection">
+        Проверяем подключение...
+      </div>
+
+      <div class="device-subtitle">
+        Обновлено:
+        <span id="last-updated">—</span>
+      </div>
+    </div>
+
+    <span class="device-arrow">›</span>
+  </button>
+
+</main>
 
 
-<hr>
 
-<section>
-    <h2>Режим проветривания</h2>
+<!-- НАВИГАЦИЯ -->
+<nav class="bottom-nav">
 
-    <label for="window-mode">
-        Как открыто окно:
-    </label>
+  <a href="/" class="nav-link active">
+    <i data-lucide="house"></i>
+    <span>Главная</span>
+  </a>
 
-    <select id="window-mode">
-        <option value="closed">Закрыто</option>
-        <option value="micro">Микропроветривание</option>
-        <option value="tilt">Откинуто</option>
-        <option value="open">Распахнуто</option>
+  <a href="/map" class="nav-link">
+    <i data-lucide="map"></i>
+    <span>Карта</span>
+  </a>
+
+  <a href="/history" class="nav-link">
+    <i data-lucide="history"></i>
+    <span>История</span>
+  </a>
+
+  <a href="/settings" class="nav-link">
+    <i data-lucide="settings-2"></i>
+    <span>Настройки</span>
+  </a>
+
+</nav>
+
+
+<!-- МОДАЛЬНОЕ ОКНО: ОКНО -->
+<div class="modal" id="window-modal">
+  <div class="modal-sheet">
+
+    <div class="modal-header">
+      <h2>Управление окном</h2>
+      <button class="close-modal" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="detail-row">
+      <span>Состояние датчика</span>
+      <strong id="detail-window-sensor">—</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>Текущий режим</span>
+      <strong id="detail-window-mode">—</strong>
+    </div>
+
+    <div class="detail-section">Выбор режима</div>
+
+    <select id="window-mode-select" class="mode-select">
+      <option value="closed">Закрыто</option>
+      <option value="micro">Микропроветривание</option>
+      <option value="tilt">Откинуто</option>
+      <option value="open">Распахнуто</option>
     </select>
 
-    <p id="window-mode-status">
-        Загрузка режима окна...
+    <button class="action primary full"
+            onclick="saveWindowMode()">
+      Сохранить режим
+    </button>
+
+    <p id="window-save-status" class="modal-note"
+       aria-live="polite"></p>
+    <p id="window-warning" class="modal-note"></p>
+
+    <p class="modal-note">
+      Выбранное положение окна используется
+      в расчёте проветривания. Физическое
+      управление окном не выполняется.
     </p>
-</section>
+  </div>
+</div>
 
-<script
-    src="{{ url_for('static', filename='js/window_mode.js') }}"
-    defer>
+<!-- МОДАЛЬНОЕ ОКНО: КАЧЕСТВО ВОЗДУХА -->
+<div class="modal" id="air-modal">
+  <div class="modal-sheet">
+
+    <div class="modal-header">
+      <h2>Качество воздуха</h2>
+      <button class="close-modal" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="detail-section">В помещении</div>
+
+    <div class="detail-row">
+      <span>CO₂</span>
+      <strong><span id="air-co2">—</span> ppm</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>PM1</span>
+      <strong><span id="air-pm1">—</span> мкг/м³</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>PM2.5</span>
+      <strong><span id="air-indoor-pm25">—</span> мкг/м³</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>PM10</span>
+      <strong><span id="air-indoor-pm10">—</span> мкг/м³</strong>
+    </div>
+
+    <div class="detail-section">Наружный воздух</div>
+
+    <div class="detail-row">
+      <span>Европейский AQI</span>
+      <strong id="detail-aqi">—</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>Оценка</span>
+      <strong id="detail-aqi-label">—</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>PM2.5</span>
+      <strong id="outside-pm25">—</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>PM10</span>
+      <strong id="outside-pm10">—</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>NO₂</span>
+      <strong id="outside-no2">—</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>SO₂</span>
+      <strong id="outside-so2">—</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>CO</span>
+      <strong id="outside-co">—</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>O₃</span>
+      <strong id="outside-o3">—</strong>
+    </div>
+
+    <div class="detail-section">Предупреждения</div>
+    <p id="detail-warnings" class="modal-note">—</p>
+
+    <p class="modal-note">
+      Наружные данные предоставляются
+      моделью Open-Meteo / CAMS.
+      Единицы загрязнителей: мкг/м³.
+    </p>
+
+    <button class="action full" onclick="refreshAir()">
+      ↻ Обновить наружные данные
+    </button>
+    <p id="air-refresh-status" class="modal-note"></p>
+  </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО: ПОГОДА -->
+<div class="modal" id="weather-modal">
+  <div class="modal-sheet">
+
+    <div class="modal-header">
+      <h2>Погода и микроклимат</h2>
+      <button class="close-modal" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="detail-section">В помещении</div>
+
+    <div class="detail-row">
+      <span>Температура</span>
+      <strong id="detail-temp-inside">—</strong>
+    </div>
+    <div class="detail-row">
+      <span>Влажность</span>
+      <strong id="detail-humidity-inside">—</strong>
+    </div>
+    <div class="detail-row">
+      <span>Давление</span>
+      <strong id="detail-pressure-inside">—</strong>
+    </div>
+
+<div class="detail-section">Наружные датчики</div>
+
+    <div class="detail-row">
+      <span>Температура</span>
+      <strong id="detail-temp-outside">—</strong>
+    </div>
+    <div class="detail-row">
+      <span>Влажность</span>
+      <strong id="detail-humidity-outside">—</strong>
+    </div>
+    <div class="detail-row">
+      <span>Давление</span>
+      <strong id="detail-pressure-outside">—</strong>
+    </div>
+
+
+<div class="detail-section">
+  Погодная модель · Open-Meteo
+</div>
+
+<div class="detail-row">
+  <span>Температура</span>
+  <strong id="meteo-temperature">—</strong>
+</div>
+
+<div class="detail-row">
+  <span>Влажность</span>
+  <strong id="meteo-humidity">—</strong>
+</div>
+
+<div class="detail-row">
+  <span>Давление</span>
+  <strong id="meteo-pressure">—</strong>
+</div>
+
+<div class="detail-row">
+  <span>Источник</span>
+  <strong id="meteo-location">—</strong>
+</div>
+
+
+    <div class="detail-section">Ветер · Open-Meteo</div>
+
+    <div class="detail-row">
+      <span>Скорость</span>
+      <strong id="detail-wind-speed">—</strong>
+    </div>
+    <div class="detail-row">
+      <span>Направление</span>
+      <strong id="detail-wind-direction">—</strong>
+    </div>
+    <div class="detail-row">
+      <span>Время данных</span>
+      <strong id="detail-weather-time">—</strong>
+    </div>
+
+    <button class="action full"
+            style="margin-top:22px"
+            onclick="refreshWeather()">
+      ↻ Обновить погоду
+    </button>
+
+    <p id="weather-refresh-status"
+       class="modal-note"></p>
+  </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО: CO2 -->
+<div class="modal" id="co2-modal">
+  <div class="modal-sheet">
+
+    <div class="modal-header">
+      <h2>Углекислый газ</h2>
+      <button class="close-modal" onclick="closeModal()">×</button>
+    </div>
+
+    <div style="font-size:54px;font-weight:700">
+      <span id="detail-co2">—</span>
+      <span style="font-size:17px">ppm</span>
+    </div>
+
+    <p id="detail-co2-assessment" class="yellow"></p>
+
+    <p class="modal-note">
+      Концентрация CO₂ внутри помещения.
+      При повышении показателя TaigoAir
+      рассчитывает сценарии проветривания.
+    </p>
+
+    <a href="/forecast" class="action full"
+       style="margin-top:20px">
+      Посмотреть прогноз →
+    </a>
+  </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО: ЧАСТИЦЫ -->
+<div class="modal" id="particles-modal">
+  <div class="modal-sheet">
+
+    <div class="modal-header">
+      <h2>Мелкие частицы</h2>
+      <button class="close-modal" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="detail-row">
+      <span>PM1</span>
+      <strong id="detail-pm1">—</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>PM2.5</span>
+      <strong id="detail-pm25">—</strong>
+    </div>
+
+    <div class="detail-row">
+      <span>PM10</span>
+      <strong id="detail-pm10">—</strong>
+    </div>
+
+    <p class="modal-note">
+      PM1, PM2.5 и PM10 — частицы разных
+      размеров. Наружные значения могут
+      отличаться от показаний внутри помещения.
+    </p>
+  </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО: УСТРОЙСТВО -->
+<div class="modal" id="device-modal">
+  <div class="modal-sheet">
+
+    <div class="modal-header">
+      <h2>Состояние устройства</h2>
+      <button class="close-modal" onclick="closeModal()">×</button>
+    </div>
+
+    <div class="detail-row">
+      <span>Подключение</span>
+      <strong id="detail-connection">—</strong>
+    </div>
+    <div class="detail-row">
+      <span>Режим датчиков</span>
+      <strong id="detail-mode">—</strong>
+    </div>
+    <div class="detail-row">
+      <span>Вентилятор</span>
+      <strong id="detail-fan">—</strong>
+    </div>
+    <div class="detail-row">
+      <span>Окно</span>
+      <strong id="detail-device-window">—</strong>
+    </div>
+    <div class="detail-row">
+      <span>Последнее измерение</span>
+      <strong id="detail-updated">—</strong>
+    </div>
+
+    <p class="modal-note">
+      Показания обновляются автоматически
+      каждые 5 секунд, пока страница активна.
+    </p>
+
+    <button class="action primary full"
+            onclick="refreshSensors()">
+      ↻ Обновить измерения
+    </button>
+
+<a href="/home"
+   class="action full"
+   style="margin-top:12px">
+  <i data-lucide="house"
+     style="
+       width:17px;
+       height:17px;
+       display:inline-block;
+       vertical-align:middle;
+       margin-right:7px;
+     "></i>
+  Настройки моего дома →
+</a>
+
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/*
+  TaigoAir — главная страница.
+  Встроенный JS вместо старых dashboard.js,
+  weather.js, air_quality.js и других скриптов.
+*/
+
+const $ = id => document.getElementById(id);
+
+
+const userSettings = {{ settings | default({}, true) | tojson }};
+
+const CO2_LIMIT =
+  Number(userSettings.co2_target) || 1000;
+
+const CO2_PREFERRED =
+  Number(userSettings.co2_preferred) || 700;
+
+const PM25_LIMIT =
+  Number(userSettings.pm25_limit) || 35;
+
+
+
+const state = {
+  sensors:null,
+  weather:null,
+  air:null,
+  windowMode:null,
+  forecast:null
+};
+
+const windowLabels = {
+  closed:"Закрыто",
+  micro:"Микропроветривание",
+  tilt:"Откинуто",
+  open:"Распахнуто"
+};
+
+function value(v,suffix="") {
+  if(v===null || v===undefined || v==="") return "—";
+  return `${v}${suffix}`;
+}
+
+function put(id,text) {
+  const el=$(id);
+  if(el) el.textContent=text;
+}
+
+async function api(url,options={}) {
+  const response=await fetch(url,{
+    cache:"no-store",
+    ...options
+  });
+
+  const data=await response.json();
+
+  if(!response.ok) {
+    throw new Error(data.error || `HTTP ${response.status}`);
+  }
+
+  return data;
+}
+
+/* Модальные окна */
+
+function openModal(id) {
+  const modal=$(id);
+  if(!modal) return;
+
+  modal.classList.add("open");
+  document.body.style.overflow="hidden";
+}
+
+function closeModal() {
+  document.querySelectorAll(".modal.open").forEach(
+    modal=>modal.classList.remove("open")
+  );
+  document.body.style.overflow="";
+}
+
+document.querySelectorAll(".modal").forEach(modal=>{
+  modal.addEventListener("click",e=>{
+    if(e.target===modal) closeModal();
+  });
+});
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape") closeModal();
+});
+
+/* Оценки */
+
+function co2Assessment(n) {
+  if (n == null) return "Нет данных";
+
+  if (n <= CO2_PREFERRED) {
+    return "Хорошо";
+  }
+
+  if (n <= CO2_LIMIT) {
+    return "Выше желаемого";
+  }
+
+  return "Повышенный CO₂";
+}
+
+function pmAssessment(n) {
+  if (n == null) return "Нет данных";
+
+  if (n <= PM25_LIMIT) {
+    return "В пределах нормы";
+  }
+
+  return "Выше заданного предела";
+}
+
+function aqiAssessment(n) {
+  if(n==null) return "Нет данных";
+  if(n<=20) return "Хорошее";
+if(n<=40) return "Удовлетворительное";
+  if(n<=60) return "Умеренное";
+  if(n<=80) return "Плохое";
+  if(n<=100) return "Очень плохое";
+  return "Крайне плохое";
+}
+function shortAqiAssessment(n) {
+  if (n == null) return "Нет данных";
+  if (n <= 20) return "Хорошее";
+  if (n <= 40) return "Нормальное";
+  if (n <= 60) return "Умеренное";
+  if (n <= 80) return "Плохое";
+  if (n <= 100) return "Очень плохое";
+  return "Критическое";
+}
+
+/* Датчики */
+
+async function refreshSensors() {
+  try {
+    const d=await api("/api/sensors");
+    state.sensors=d;
+
+    put("main-co2",value(d.co2));
+    put("main-pm25",value(d.pm25));
+
+    put("co2-assessment",co2Assessment(d.co2));
+    put("pm25-assessment",pmAssessment(d.pm25));
+
+    put("air-co2",value(d.co2));
+    put("air-pm1",value(d.pm1));
+    put("air-indoor-pm25",value(d.pm25));
+    put("air-indoor-pm10",value(d.pm10));
+
+    put("detail-co2",value(d.co2));
+    put("detail-co2-assessment",co2Assessment(d.co2));
+
+    put("detail-pm1",value(d.pm1," мкг/м³"));
+    put("detail-pm25",value(d.pm25," мкг/м³"));
+    put("detail-pm10",value(d.pm10," мкг/м³"));
+
+    put("detail-temp-inside",
+      value(d.temperature_inside," °C"));
+    put("detail-humidity-inside",
+      value(d.humidity_inside," %"));
+    put("detail-pressure-inside",
+      value(d.pressure_inside," мм рт. ст."));
+
+    put("detail-temp-outside",
+      value(d.temperature_outside," °C"));
+    put("detail-humidity-outside",
+      value(d.humidity_outside," %"));
+    put("detail-pressure-outside",
+      value(d.pressure_outside," мм рт. ст."));
+
+    const windowState=d.window_open
+      ? "Открыто" : "Закрыто";
+
+    put("window-sensor",windowState);
+    put("detail-window-sensor",windowState);
+    put("detail-device-window",windowState);
+
+    put("detail-fan",
+      d.fan_on ? "Включён" : "Выключен");
+
+    const simulation=d.mode==="simulation";
+
+const connection = simulation
+  ? "Тестовый режим · симуляция"
+  : "Режим физических датчиков";
+
+    put("device-connection",connection);
+    put("detail-connection",connection);
+
+    put("detail-mode",simulation
+      ? "Тестовые данные"
+      : "Реальные измерения");
+
+    put("last-updated",value(d.timestamp));
+    put("detail-updated",value(d.timestamp));
+
+
+const warnings = [];
+
+if (d.co2 != null && d.co2 > CO2_LIMIT) {
+  warnings.push(
+    `CO₂ превышает порог ${CO2_LIMIT} ppm`
+  );
+}
+
+if (d.pm25 != null && d.pm25 > PM25_LIMIT) {
+  warnings.push(
+    `PM2.5 превышает предел ${PM25_LIMIT} мкг/м³`
+  );
+}
+
+
+put(
+  "detail-warnings",
+  warnings.length
+    ? warnings.join(". ")
+    : "Предупреждений нет"
+);
+
+$("device-dot").style.background =
+  simulation ? "#ffbd17" : "#8ab4ff";
+
+
+    updateWindowWarning();
+
+  } catch(error) {
+    put("device-connection","Нет связи с сервером");
+    put("detail-connection","Ошибка подключения");
+    $("device-dot").style.background="#ff6868";
+    console.error("Sensors:",error);
+  }
+}
+
+/* Погода */
+
+
+async function refreshWeather() {
+  put("weather-refresh-status", "Обновляем...");
+
+  try {
+    const d = await api("/api/weather");
+    state.weather = d;
+
+    put("outside-temperature",
+      value(d.temperature));
+
+    put("meteo-temperature",
+      value(d.temperature, " °C"));
+
+    put("meteo-humidity",
+      value(d.humidity, " %"));
+
+    put("meteo-pressure",
+      value(d.pressure, " гПа"));
+
+    put("meteo-location",
+      value(d.location));
+
+    put("detail-wind-speed",
+      value(d.wind_speed, " м/с"));
+
+    put("detail-wind-direction",
+      value(d.wind_direction, "°"));
+
+    put("detail-weather-time",
+      value(d.timestamp));
+
+    put("weather-refresh-status",
+      "Данные обновлены");
+
+  } catch (error) {
+    put("weather-refresh-status",
+      "Не удалось обновить погоду");
+
+    console.error("Weather:", error);
+  }
+}
+
+
+
+/* Наружное загрязнение */
+
+async function refreshAir() {
+  put("air-refresh-status","Обновляем...");
+
+  try {
+    const d=await api("/api/air-quality");
+    state.air=d;
+
+    const assessment=aqiAssessment(d.aqi);
+
+put("air-quality-label",shortAqiAssessment(d.aqi));
+    put("detail-aqi",value(d.aqi));
+    put("detail-aqi-label",assessment);
+
+    const fields={
+      "outside-pm25":d.pm25,
+      "outside-pm10":d.pm10,
+      "outside-no2":d.no2,
+      "outside-so2":d.so2,
+      "outside-co":d.co,
+      "outside-o3":d.o3
+    };
+
+    for(const [id,v] of Object.entries(fields)) {
+      put(id,value(v," мкг/м³"));
+    }
+
+    put("air-refresh-status","Данные обновлены");
+
+  } catch(error) {
+    put("air-quality-label","Нет данных");
+    put("air-refresh-status",error.message);
+    console.error("Air:",error);
+  }
+}
+
+/* Режим окна */
+
+async function refreshWindowMode() {
+  try {
+    const d=await api("/api/window-mode");
+
+    state.windowMode=d.window_mode;
+
+    const label=windowLabels[d.window_mode]
+      || "Не определено";
+
+    put("window-mode-label",label);
+    put("detail-window-mode",label);
+
+    if(windowLabels[d.window_mode]) {
+      $("window-mode-select").value=d.window_mode;
+    }
+
+    updateWindowWarning();
+
+  } catch(error) {
+    put("window-mode-label","Не настроено");
+    put("window-save-status",error.message);
+  }
+}
+
+function updateWindowWarning() {
+  const d=state.sensors;
+  const mode=state.windowMode;
+
+  if(!d || !mode) return;
+
+  if(mode==="closed" && d.window_open) {
+    put("window-warning",
+      "Датчик показывает открытое окно, " +
+      "но выбран режим «Закрыто».");
+  } else if(mode!=="closed" && !d.window_open) {
+    put("window-warning",
+      "Окно по датчику закрыто. " +
+      "Выбранный режим используется для прогноза.");
+  } else {
+    put("window-warning",
+      "Состояние датчика соответствует сценарию.");
+  }
+}
+
+async function saveWindowMode() {
+  const select=$("window-mode-select");
+  const button=document.querySelector(
+    "#window-modal .action.primary"
+  );
+
+  const previous=state.windowMode;
+
+  button.disabled=true;
+  put("window-save-status","Сохраняем...");
+
+  try {
+    await api("/api/window-mode",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        window_mode:select.value
+      })
+    });
+
+    state.windowMode=select.value;
+    await refreshWindowMode();
+    await refreshRecommendation();
+
+    put("window-save-status","Режим сохранён");
+
+  } catch(error) {
+    select.value=previous || "closed";
+    put("window-save-status",error.message);
+  } finally {
+    button.disabled=false;
+  }
+}
+
+/* Рекомендация */
+
+
+async function refreshRecommendation() {
+  try {
+    const d = await api("/api/forecast/scenarios");
+    state.forecast = d;
+
+    const r = d.recommendation || {};
+    const decision = r.decision || "";
+
+    let title = decision || "Рекомендация недоступна";
+    let explanation = r.reason ||
+      "Нет подробностей расчёта.";
+
+    let duration = "—";
+
+    if (r.recommended_minutes != null) {
+      duration = Number(r.recommended_minutes) === 0
+        ? "Не требуется"
+        : `${r.recommended_minutes} минут`;
+
+    } else if (r.possible_minutes != null) {
+      duration = `${r.possible_minutes} минут`;
+    }
+
+
+if (decision === "Подходящего сценария нет") {
+  title = "Подходящий сценарий не найден";
+  duration = "Время не определено";
+  explanation =
+    "Ни один из рассчитанных сценариев " +
+    "не удовлетворяет всем заданным ограничениям.";
+}
+
+
+    if (decision === "Проветривание не требуется") {
+      title = "Проветривание не требуется";
+      duration = "Сейчас";
+      explanation =
+        "Показатели находятся в пределах " +
+        "установленных порогов.";
+    }
+
+    if (decision === "Есть превышение заданных порогов") {
+      title = "Есть превышение показателей";
+      duration = "Нужен расчёт";
+      explanation =
+        "Выберите режим открытия окна, чтобы " +
+        "оценить варианты проветривания.";
+    }
+
+    put("recommendation-decision", title);
+    put("recommendation-time", duration);
+    put("recommendation-reason", explanation);
+
+  } catch (error) {
+    put("recommendation-decision",
+      "Не удалось рассчитать прогноз");
+
+    put("recommendation-time", "—");
+
+    put("recommendation-reason",
+      error.message);
+  }
+}
+
+/* Загрузка и автообновление */
+
+async function refreshAll() {
+  await Promise.allSettled([
+    refreshSensors(),
+    refreshWeather(),
+    refreshAir(),
+    refreshWindowMode()
+  ]);
+
+  await refreshRecommendation();
+}
+
+
+/* ===== ПЛАВНОЕ ПОЯВЛЕНИЕ КАРТОЧЕК ===== */
+
+function initCardAnimations() {
+  const scroller = document.querySelector(".app");
+
+  const cards = [
+    ...document.querySelectorAll(
+      ".window-card, .grid .tile, .recommendation, .device-strip"
+    )
+  ];
+
+  if (!scroller || !cards.length) return;
+
+  if (window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches) return;
+
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+        } else if (entry.boundingClientRect.top >
+                   scroller.getBoundingClientRect().bottom) {
+          entry.target.classList.remove("is-visible");
+        }
+      });
+    },
+    {
+      root: scroller,
+      threshold: 0.08,
+      rootMargin: "0px 0px -16px 0px"
+    }
+  );
+
+  // Скрываем карточки только после настройки наблюдателя.
+  cards.forEach(card => {
+    card.classList.add("reveal-card");
+    observer.observe(card);
+  });
+
+  document.documentElement.classList.add("motion-ready");
+}
+
+initCardAnimations();
+
+
+
+/* TaigoAir — двусторонняя анимация рулетки */
+
+function initScrollWheel() {
+  const scroller = document.querySelector(".app");
+
+  if (!scroller) return;
+
+  const cards = [
+    ...scroller.querySelectorAll(
+      ".window-card, .grid .tile, .recommendation, .device-strip"
+    )
+  ];
+
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  );
+
+  if (reducedMotion.matches) return;
+
+  cards.forEach(card => {
+    card.classList.add("scroll-wheel-card");
+  });
+
+  let ticking = false;
+
+  function updateCards() {
+    const viewport = scroller.getBoundingClientRect();
+    const top = viewport.top;
+    const bottom = viewport.bottom;
+
+    const maxScroll =
+  scroller.scrollHeight - scroller.clientHeight;
+
+const atBottom =
+  scroller.scrollTop >= maxScroll - 8;
+
+    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+
+      // Расстояние карточки от видимой области
+      const enteringFromBottom = Math.max(
+        0,
+        rect.top - (bottom - 200)
+      );
+
+      const leavingAtTop = Math.max(
+        0,
+        (top + 100) - rect.bottom
+      );
+
+      // Чем ближе к краю, тем меньше карточка
+      const distance = Math.max(
+        enteringFromBottom,
+        leavingAtTop
+      );
+
+      const isLastCard =
+  card === cards[cards.length - 1];
+
+const progress =
+  isLastCard && atBottom
+    ? 0
+    : Math.min(1, distance / 160);
+
+      const scale = 1 - progress * 0.10;
+      const offset = progress * (
+        enteringFromBottom > leavingAtTop ? 18 : -18
+      );
+
+      card.style.setProperty(
+        "--wheel-scale",
+        scale.toFixed(4)
+      );
+
+      card.style.setProperty(
+        "--wheel-offset",
+        `${offset.toFixed(1)}px`
+      );
+    });
+
+    ticking = false;
+  }
+
+  function onScroll() {
+    if (ticking) return;
+
+    ticking = true;
+    requestAnimationFrame(updateCards);
+  }
+
+  scroller.addEventListener("scroll", onScroll, {
+    passive: true
+  });
+
+  window.addEventListener("resize", onScroll);
+
+  updateCards();
+}
+
+initScrollWheel();
+
+
+
+console.log("TaigoAir JS запущен");
+refreshAll();
+
+// Датчики: каждые 5 секунд
+setInterval(()=>{
+  if(!document.hidden) refreshSensors();
+},5000);
+
+// Погода: каждые 10 минут
+setInterval(()=>{
+  if(!document.hidden) refreshWeather();
+},600000);
+
+// Загрязнение: каждые 30 минут
+setInterval(()=>{
+  if(!document.hidden) refreshAir();
+},1800000);
+
+// Рекомендация: каждую минуту
+setInterval(()=>{
+  if(!document.hidden) refreshRecommendation();
+},60000);
+
+// Возврат на страницу
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden) refreshAll();
+});
 </script>
-
-
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.lucide) {
+    lucide.createIcons({
+      attrs: {
+        "stroke-width": 1.8
+      }
+    });
+  }
+});
+</script>
 </body>
 </html>
-
