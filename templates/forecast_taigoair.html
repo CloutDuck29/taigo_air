@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#10449a">
+  <title>TaigoAir — Прогноз</title>
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
+  <script src="{{ url_for('static', filename='js/forecast.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='js/scenarios.js') }}" defer></script>
+  <style>
+    :root {
+      --yellow: #ffc247;
+      --green: #79d9a0;
+      --blue: #8bd8f5;
+      --muted: rgba(255, 255, 255, .76);
+      --glass: rgba(27, 40, 46, .58);
+      --radius: 29px;
+    }
+
+    * { box-sizing: border-box; }
+    html { min-height: 100%; background: #10449a; scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      height: 100dvh;
+      overflow: hidden;
+      background: transparent;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    }
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    button:focus-visible, a:focus-visible, input:focus-visible {
+      outline: 2px solid var(--yellow);
+      outline-offset: 3px;
+    }
+    a, button { -webkit-tap-highlight-color: transparent; }
+
+    /* Фон — параметры из index.html */
+    .background {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      background: #10449a;
+    }
+    .background::before {
+      content: "";
+      position: absolute;
+      inset: -20px;
+      background-image:
+        linear-gradient(180deg,
+          rgba(10, 23, 38, .22) 0%,
+          rgba(14, 29, 39, .17) 55%,
+          rgba(12, 23, 18, .27) 100%),
+        url("/static/images/landscape.jpg");
+      background-position: center top;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      filter: blur(5px);
+    }
+    .background::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 65px;
+      background: linear-gradient(to bottom,
+        #10449a 0%,
+        rgba(16, 68, 154, .75) 40%,
+        rgba(16, 68, 154, 0) 100%);
+    }
+
+    /* Прокрутка под плавающей навигацией */
+    .app {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      height: calc(100dvh - 132px - env(safe-area-inset-bottom));
+      min-height: 0;
+      margin: 0 auto;
+      padding: 8px 24px 28px;
+      overflow-y: auto;
+      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -webkit-mask-image: linear-gradient(to bottom,
+        #000 0%, #000 calc(100% - 22px), transparent 100%);
+      mask-image: linear-gradient(to bottom,
+        #000 0%, #000 calc(100% - 22px), transparent 100%);
+    }
+    .app::-webkit-scrollbar { display: none; }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 76px;
+      padding-top: calc(env(safe-area-inset-top) + 4px);
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+    }
+    .logo { font-size: 34px; font-weight: 750; letter-spacing: -1.4px; }
+    .icon-button {
+      width: 48px;
+      height: 48px;
+      border: none;
+      border-radius: 50%;
+      background: rgba(62, 51, 44, .44);
+      color: white;
+      display: grid;
+      place-items: center;
+    }
+    .icon-button svg { width: 23px; height: 23px; stroke-width: 1.8; }
+    .page-intro { margin: 5px 0 21px; padding: 0 2px; }
+    .page-intro h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -.65px;
+    }
+    .subtitle { margin: 0; font-size: 13px; line-height: 1.5; color: var(--muted); }
+    .glass {
+      background: var(--glass);
+      backdrop-filter: blur(30px) saturate(140%);
+      -webkit-backdrop-filter: blur(30px) saturate(140%);
+      border: 1px solid rgba(255, 255, 255, .22);
+      border-radius: var(--radius);
+      box-shadow:
+        0 10px 32px rgba(0, 0, 0, .20),
+        inset 0 1px 0 rgba(255, 255, 255, .10);
+    }
+    .panel { margin-bottom: 18px; padding: 20px; }
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .panel-title svg { width: 22px; height: 22px; stroke: var(--yellow); flex: 0 0 auto; }
+    .field { display: block; padding: 13px 0; border-top: 1px solid rgba(255, 255, 255, .13); }
+    .field:first-of-type { border-top: 0; padding-top: 3px; }
+    .field-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.4;
+      margin-bottom: 5px;
+    }
+    .field-help { color: var(--muted); font-size: 11px; line-height: 1.5; margin-bottom: 10px; }
+    .input-row { display: flex; align-items: center; gap: 10px; }
+    .setting-input {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      min-height: 45px;
+      padding: 10px 13px;
+      border: 1px solid rgba(255, 255, 255, .22);
+      border-radius: 14px;
+      color: white;
+      background: rgba(15, 29, 35, .48);
+      font-size: 16px;
+      font-weight: 600;
+      -webkit-user-select: text;
+      user-select: text;
+    }
+    .setting-input:focus { border-color: var(--yellow); }
+    .unit { flex: 0 0 auto; min-width: 58px; color: var(--muted); font-size: 12px; text-align: right; }
+    .notice {
+      padding: 13px 16px;
+      border-radius: 17px;
+      margin-bottom: 16px;
+      border: 1px solid rgba(255, 255, 255, .19);
+      background: rgba(26, 44, 40, .62);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .notice.success { color: #b5f5d1; }
+    .notice.error { color: #ffcccc; }
+    .save-button {
+      width: 100%;
+      min-height: 50px;
+      border: 0;
+      border-radius: 17px;
+      background: var(--yellow);
+      color: #291c00;
+      font-size: 14px;
+      font-weight: 750;
+    }
+    .save-button:active, .quick-link:active { transform: scale(.98); }
+    .note { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .quick-links { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .quick-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 13px 12px;
+      border-radius: 15px;
+      background: rgba(36, 29, 23, .48);
+      border: 1px solid rgba(255, 255, 255, .12);
+      font-size: 12px;
+      font-weight: 650;
+      transition: transform .2s ease;
+    }
+    .quick-link svg { width: 17px; height: 17px; color: var(--yellow); flex: 0 0 auto; }
+
+    /* Навигация — тот же блок, что на главной */
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: calc(12px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 448px;
+      z-index: 30;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 2px;
+      padding: 12px 8px;
+      border-radius: 28px;
+      background: rgba(27, 40, 46, .58);
+      border: 1px solid rgba(255, 255, 255, .22);
+      backdrop-filter: blur(30px) saturate(100%);
+      -webkit-backdrop-filter: blur(30px) saturate(100%);
+      box-shadow:
+        0 10px 32px rgba(0, 0, 0, .20),
+        inset 0 1px 0 rgba(255, 255, 255, .10);
+      isolation: isolate;
+      overflow: hidden;
+    }
+    .bottom-nav::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      z-index: -1;
+      pointer-events: none;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.10));
+    }
+    .nav-link {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: rgba(255, 255, 255, .85);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .nav-link svg {
+      width: 23px;
+      height: 23px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .nav-link.active { color: #ffca39; font-weight: 650; }
+
+    /* Двусторонняя анимация карточек */
+    .scroll-wheel-card {
+      --wheel-scale: 1;
+      --wheel-offset: 0px;
+      transform: translate3d(0, var(--wheel-offset), 0) scale(var(--wheel-scale));
+      transform-origin: center center;
+      backface-visibility: hidden;
+      will-change: transform;
+    }
+    @media (max-width: 390px) {
+      .app { padding-left: 17px; padding-right: 17px; padding-top: 6px; }
+      .panel { padding: 17px; }
+    }
+    @media (max-width: 350px) {
+      .app { padding-left: 13px; padding-right: 13px; }
+      .quick-links { grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .scroll-wheel-card { transform: none !important; }
+    }
+  
+    /* Forecast-specific components */
+    .section-copy { margin: -3px 0 15px; color:var(--muted); font-size:13px; line-height:1.6; }
+    .status-line { padding:12px 14px; border-radius:14px; background:rgba(14,29,37,.35); color:var(--muted); font-size:13px; line-height:1.5; margin:13px 0 17px; }
+    .detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin:16px 0; }
+    .detail-box { border-radius:17px; padding:13px; background:rgba(12,29,38,.37); border:1px solid rgba(255,255,255,.11); min-width:0; }
+    .detail-label { font-size:11px; color:var(--muted); line-height:1.4; margin-bottom:7px; }
+    .detail-value { font-size:18px; font-weight:750; overflow-wrap:anywhere; }
+    .subheading { font-size:15px; margin:17px 0 10px; font-weight:700; }
+    .table-scroll { width:100%; max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; border:1px solid rgba(255,255,255,.13); border-radius:17px; background:rgba(13,29,37,.28); }
+    .forecast-table { width:100%; min-width:680px; border-collapse:collapse; font-size:12px; font-variant-numeric:tabular-nums; }
+    .forecast-table th,.forecast-table td { padding:13px 12px; text-align:left; white-space:nowrap; border-bottom:1px solid rgba(255,255,255,.12); }
+    .forecast-table th { font-size:11px; color:var(--muted); font-weight:650; background:rgba(9,25,36,.35); }
+    .forecast-table tbody tr:last-child td { border-bottom:0; }
+    .forecast-table tbody tr:nth-child(even) { background:rgba(255,255,255,.035); }
+    .scroll-hint { margin:8px 1px 0; color:var(--muted); font-size:11px; }
+    .warning-list { padding-left:19px; font-size:12px; line-height:1.6; color:var(--muted); }
+    .warning-list li+li { margin-top:5px; }
+    .link-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 15px; border-radius:16px; background:rgba(20,38,43,.35); border:1px solid rgba(255,255,255,.14); font-size:13px; font-weight:650; }
+    .link-row svg { width:18px; height:18px; color:var(--yellow); flex-shrink:0; }
+    .setting-input:focus { outline:none; box-shadow:0 0 0 2px rgba(255,194,71,.18); }
+    html,body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+    input { -webkit-user-select:text; user-select:text; -webkit-touch-callout:default; }
+    a,button { touch-action:manipulation; }
+    .app { scroll-padding-bottom:110px; }
+    @media(max-width:390px) { .detail-grid { gap:8px; } .detail-value { font-size:16px; } }
+  </style>
+</head>
+<body>
+  <div class="background"></div>
+  <main class="app">
+    <header class="header">
+      <div class="logo">TaigoAir</div>
+      <a class="icon-button" href="/" aria-label="На главную"><i data-lucide="house"></i></a>
+    </header>
+
+    <div class="page-intro">
+      <h1>Прогноз</h1>
+      <p class="subtitle">Сценарии проветривания и исследовательский расчёт качества воздуха</p>
+    </div>
+
+    <section class="glass panel">
+      <h2 class="panel-title"><i data-lucide="wind"></i> Прогноз по режиму окна</h2>
+      <p class="section-copy">Три сценария воздухообмена на основе выбранного режима открытия окна.</p>
+      <p id="scenario-status" class="status-line" role="status" aria-live="polite">Загрузка сценариев...</p>
+      <div class="table-scroll" role="region" aria-label="Таблица сценариев" tabindex="0">
+        <table class="forecast-table">
+          <thead><tr><th>Сценарий</th><th>Время</th><th>CO₂, ppm</th><th>PM2.5, мкг/м³</th><th>Температура, °C</th><th>Энергия, Вт·ч</th></tr></thead>
+          <tbody id="scenario-table"></tbody>
+        </table>
+      </div>
+      <p class="scroll-hint">Листай таблицу в сторону для остальных показателей</p>
+      <h3 class="subheading">TaigoRecommend — оценка сценариев</h3>
+      <div class="detail-grid">
+        <div class="detail-box"><div class="detail-label">Решение</div><div id="scenario-decision" class="detail-value">—</div></div>
+        <div class="detail-box"><div class="detail-label">Возможное время</div><div id="scenario-time" class="detail-value">—</div></div>
+      </div>
+      <p id="scenario-reason" class="section-copy">Ожидание расчёта.</p>
+      <p class="note">Диапазоны воздухообмена предварительные. Результаты требуют проверки на реальных измерениях.</p>
+    </section>
+
+    <section class="glass panel">
+      <h2 class="panel-title"><i data-lucide="flask-conical"></i> Исследовательский режим</h2>
+      <p class="section-copy">Ручной прогноз для проверки математической модели. Кратность воздухообмена задаётся вручную. Рекомендация относится только к выбранному исследовательскому сценарию и не учитывает режим окна.</p>
+      <label class="field" for="air-exchange">
+        <span class="field-label">Кратность воздухообмена</span>
+        <span class="field-help">Число замен объёма воздуха в час при открытом окне.</span>
+        <span class="input-row">
+          <input class="setting-input" id="air-exchange" type="number" inputmode="decimal" min="0.1" max="30" step="0.1" value="{{ settings.air_changes_per_hour }}">
+          <span class="unit">1/ч</span>
+        </span>
+      </label>
+      <button id="calculate-forecast" class="save-button" type="button">Рассчитать и сохранить прогноз</button>
+      <p id="forecast-status" class="status-line" role="status" aria-live="polite">Расчёт ещё не выполнен.</p>
+      <div class="detail-grid">
+        <div class="detail-box"><div class="detail-label">Объём комнаты</div><div class="detail-value"><span id="room-volume">—</span> <span style="font-size:12px">м³</span></div></div>
+        <div class="detail-box"><div class="detail-label">Воздухообмен</div><div class="detail-value"><span id="air-flow">—</span> <span style="font-size:12px">м³/ч</span></div></div>
+      </div>
+    </section>
+
+    <section class="glass panel">
+      <h2 class="panel-title"><i data-lucide="chart-no-axes-combined"></i> Прогноз по времени</h2>
+      <p class="section-copy">Изменение показателей по шагам рассчитанного сценария.</p>
+      <div class="table-scroll" role="region" aria-label="Прогноз по времени" tabindex="0">
+        <table class="forecast-table">
+          <thead><tr><th>Время</th><th>CO₂, ppm</th><th>PM2.5, мкг/м³</th><th>Температура, °C</th><th>Энергия воздухообмена, Вт·ч</th></tr></thead>
+          <tbody id="forecast-table"></tbody>
+        </table>
+      </div>
+      <p class="scroll-hint">Листай таблицу в сторону для остальных показателей</p>
+    </section>
+
+    <section class="glass panel">
+      <h2 class="panel-title"><i data-lucide="lightbulb"></i> TaigoRecommend</h2>
+      <div class="detail-grid">
+        <div class="detail-box"><div class="detail-label">Решение</div><div id="recommendation-decision" class="detail-value" style="font-size:15px">Расчёт ещё не выполнен</div></div>
+        <div class="detail-box"><div class="detail-label">Рекомендуемое время</div><div id="recommendation-time" class="detail-value">—</div></div>
+      </div>
+      <h3 class="subheading">Объяснение</h3>
+      <p id="recommendation-reason" class="section-copy">Нажми «Рассчитать и сохранить прогноз».</p>
+      <h3 class="subheading">Предупреждения</h3>
+      <ul id="recommendation-warnings" class="warning-list"><li>Нет данных</li></ul>
+      <p class="note">Рекомендация основана на упрощённой математической модели и требует проверки на реальных измерениях.</p>
+    </section>
+
+    <section class="glass panel">
+      <h2 class="panel-title"><i data-lucide="info"></i> Ограничения модели</h2>
+      <p id="forecast-limitations" class="section-copy">Расчёт использует упрощённую модель.</p>
+      <p class="note">Наружный CO₂ пока принят равным 420 ppm. Кратность воздухообмена задаётся вручную. Результаты не являются проверенным прогнозом для реального помещения.</p>
+    </section>
+
+    <section class="glass panel">
+      <h2 class="panel-title"><i data-lucide="history"></i> Архив расчётов</h2>
+      <a href="/forecast/history" class="link-row">История прогнозов <i data-lucide="arrow-up-right"></i></a>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="Основная навигация">
+    <a href="/" class="nav-link"><i data-lucide="house"></i><span>Главная</span></a>
+    <a href="/map" class="nav-link"><i data-lucide="map"></i><span>Карта</span></a>
+    <a href="/history" class="nav-link"><i data-lucide="history"></i><span>История</span></a>
+    <a href="/settings" class="nav-link"><i data-lucide="settings-2"></i><span>Настройки</span></a>
+  </nav>
+  <script>
+    "use strict";
+    document.addEventListener("DOMContentLoaded", () => {
+      if (window.lucide) lucide.createIcons({ attrs: { "stroke-width": 1.8 } });
+      const scroller = document.querySelector(".app");
+      if (!scroller || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const cards = [...scroller.querySelectorAll(".panel")];
+      cards.forEach(card => card.classList.add("scroll-wheel-card"));
+      let ticking = false;
+      function updateCards() {
+        const viewport = scroller.getBoundingClientRect();
+        const maxScroll = scroller.scrollHeight - scroller.clientHeight;
+        const atBottom = scroller.scrollTop >= maxScroll - 8;
+        cards.forEach(card => {
+          const rect = card.getBoundingClientRect();
+          const offset = parseFloat(card.style.getPropertyValue("--wheel-offset")) || 0;
+          const scale = parseFloat(card.style.getPropertyValue("--wheel-scale")) || 1;
+          const originalHeight = rect.height / scale;
+          const originalTop = rect.top - offset - originalHeight * (1 - scale) / 2;
+          const originalBottom = originalTop + originalHeight;
+          const entering = Math.max(0, originalTop - (viewport.bottom - 200));
+          const leaving = Math.max(0, (viewport.top + 100) - originalBottom);
+          const distance = Math.max(entering, leaving);
+          const last = card === cards[cards.length - 1];
+          const progress = last && atBottom ? 0 : Math.min(1, distance / 160);
+          card.style.setProperty("--wheel-scale", (1 - progress * .10).toFixed(4));
+          card.style.setProperty("--wheel-offset", `${(progress * (entering > leaving ? 18 : -18)).toFixed(1)}px`);
+        });
+        ticking = false;
+      }
+      function onScroll() {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(updateCards);
+      }
+      scroller.addEventListener("scroll", onScroll, {passive: true});
+      window.addEventListener("resize", onScroll);
+      updateCards();
+    });
+  </script>
+</body>
+</html>

@@ -1,18 +1,59 @@
 
-const scenarioStatus = document.getElementById(
-    "scenario-status"
-);
+"use strict";
 
-const scenarioTable = document.getElementById(
-    "scenario-table"
-);
+const scenarioStatus = document.getElementById("scenario-status");
+const scenarioTable = document.getElementById("scenario-table");
+
+let scenarioInProgress = false;
+
+function setScenarioText(id, value) {
+    document.getElementById(id).textContent = value;
+}
+
+function clearScenarios() {
+    scenarioTable.replaceChildren();
+
+    setScenarioText("scenario-decision", "—");
+    setScenarioText("scenario-time", "—");
+    setScenarioText(
+        "scenario-reason",
+        "Ожидание расчёта."
+    );
+}
+
+function addScenarioRow(scenario, result) {
+    const row = document.createElement("tr");
+
+    const values = [
+        `${scenario.label} (${scenario.ach} ч⁻¹)`,
+        `${result.minutes} мин`,
+        result.co2,
+        result.pm25,
+        result.temperature,
+        result.heat_loss_wh
+    ];
+
+    for (const value of values) {
+        const cell = document.createElement("td");
+        cell.textContent = value ?? "—";
+        row.appendChild(cell);
+    }
+
+    scenarioTable.appendChild(row);
+}
 
 async function loadScenarios() {
+    if (scenarioInProgress) {
+        return;
+    }
+
+    scenarioInProgress = true;
     scenarioStatus.textContent = "Расчёт сценариев...";
 
     try {
         const response = await fetch(
-            "/api/forecast/scenarios"
+            "/api/forecast/scenarios",
+            { cache: "no-store" }
         );
 
         const data = await response.json();
@@ -23,86 +64,104 @@ async function loadScenarios() {
             );
         }
 
-        scenarioTable.replaceChildren();
+        clearScenarios();
 
+        if (data.status === "closed") {
+            scenarioStatus.textContent =
+                data.message || "Окно закрыто.";
 
-if (data.status === "closed") {
-    scenarioStatus.textContent = data.message;
+            setScenarioText(
+                "scenario-decision",
+                "Окно закрыто"
+            );
 
-    document.getElementById(
-        "scenario-decision"
-    ).textContent = "Окно закрыто";
+            setScenarioText("scenario-time", "—");
 
-    document.getElementById(
-        "scenario-time"
-    ).textContent = "—";
+            setScenarioText(
+                "scenario-reason",
+                "Выбери режим проветривания на главной странице."
+            );
 
-    document.getElementById(
-        "scenario-reason"
-    ).textContent =
-        "Выбери режим проветривания на главной странице.";
+            return;
+        }
 
-    return;
-}
-
+        if (
+            !Array.isArray(data.scenarios) ||
+            !data.recommendation
+        ) {
+            throw new Error("Получены неполные данные сценариев");
+        }
 
         for (const scenario of data.scenarios) {
-            for (const result of scenario.results) {
-                const row = document.createElement("tr");
-
-                const values = [
-                    `${scenario.label} (${scenario.ach} ч⁻¹)`,
-                    `${result.minutes} мин`,
-                    result.co2,
-                    result.pm25,
-                    result.temperature,
-                    result.heat_loss_wh
-                ];
-
-                for (const value of values) {
-                    const cell = document.createElement("td");
-                    cell.textContent = value;
-                    row.appendChild(cell);
-                }
-
-                scenarioTable.appendChild(row);
+            for (const result of scenario.results || []) {
+                addScenarioRow(scenario, result);
             }
         }
 
-const recommendation = data.recommendation;
+        const recommendation = data.recommendation;
 
-document.getElementById(
-    "scenario-decision"
-).textContent = recommendation.decision;
+        // Сокращаем только отображение длинного решения.
+        const decision = recommendation.decision ===
+            "Зависит от воздухообмена"
+                ? "Зависит от условий"
+                : recommendation.decision ?? "Не определено";
 
-document.getElementById(
-    "scenario-time"
-).textContent =
-    recommendation.recommended_minutes !== null
-        ? `${recommendation.recommended_minutes} мин`
-        : recommendation.possible_minutes != null
-            ? `${recommendation.possible_minutes} мин (условно)`
-            : "Не определено";
+        setScenarioText(
+            "scenario-decision",
+            decision
+        );
 
-document.getElementById(
-    "scenario-reason"
-).textContent = recommendation.reason;
+        let scenarioTime = "Не определено";
 
+        if (recommendation.recommended_minutes != null) {
+            scenarioTime =
+                `${recommendation.recommended_minutes} мин`;
+
+        } else if (recommendation.possible_minutes != null) {
+            scenarioTime =
+                `${recommendation.possible_minutes} мин (условно)`;
+        }
+
+        setScenarioText(
+            "scenario-time",
+            scenarioTime
+        );
+
+        setScenarioText(
+            "scenario-reason",
+            recommendation.reason ?? "Нет объяснения."
+        );
 
         scenarioStatus.textContent =
-            `Режим окна: ${data.window_label}. ` +
+            `Режим окна: ${data.window_label ?? "не определён"}. ` +
             "Сценарии рассчитаны автоматически.";
 
     } catch (error) {
-        scenarioStatus.textContent = error.message;
+        clearScenarios();
+
+        scenarioStatus.textContent =
+            error.message || "Ошибка расчёта сценариев.";
+
         console.error(error);
+
+    } finally {
+        scenarioInProgress = false;
     }
 }
 
+// Первоначальная загрузка.
 loadScenarios();
 
+// Автоматическое обновление раз в минуту.
 setInterval(() => {
     if (!document.hidden) {
         loadScenarios();
     }
 }, 60000);
+
+// Обновление при возвращении на страницу.
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+        loadScenarios();
+    }
+});
