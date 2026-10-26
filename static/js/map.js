@@ -41,6 +41,10 @@ const map = L.map("map", {
     hasCoordinates ? 15 : 11
 );
 
+// По умолчанию карта не перехватывает прокрутку
+map.dragging.disable();
+map.scrollWheelZoom.disable();
+
 // Убираем логотип Leaflet
 map.attributionControl.setPrefix(false);
 
@@ -96,10 +100,83 @@ if (hasCoordinates) {
 }
 
 // Выбираем дом нажатием на карту
-map.on("click", function (event) {
-    selectPoint(
-        event.latlng.lat,
-        event.latlng.lng
-    );
+
+let addressRequestId = 0;
+
+async function previewSelectedAddress(latitude, longitude) {
+    const requestId = ++addressRequestId;
+
+    const addressElement =
+        document.getElementById("map-address-preview");
+
+    const stateElement =
+        document.getElementById("map-address-state");
+
+    addressElement.textContent = "Определяем адрес...";
+    stateElement.textContent = "Изменения не сохранены";
+
+    try {
+        const params = new URLSearchParams({
+            lat: latitude.toString(),
+            lon: longitude.toString()
+        });
+
+        const response = await fetch(
+            `/api/map/address?${params}`,
+            { cache: "no-store" }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Адрес недоступен");
+        }
+
+        // Не показываем ответ от ранее выбранной точки
+        if (requestId !== addressRequestId) return;
+
+        addressElement.textContent = data.address;
+
+    } catch (error) {
+        if (requestId !== addressRequestId) return;
+
+        addressElement.textContent =
+            `Точка: ${latitude.toFixed(6)}, ` +
+            longitude.toFixed(6);
+
+        stateElement.textContent =
+            "Не удалось определить адрес";
+    }
+}
+
+// Сохранённый адрес показываем при загрузке
+if (hasCoordinates) {
+    const savedAddress = document.getElementById(
+        "apartment-address"
+    )?.textContent.trim();
+
+    document.getElementById(
+        "map-address-preview"
+    ).textContent = savedAddress || "Адрес не определён";
+
+    document.getElementById(
+        "map-address-state"
+    ).textContent = "Сохранённый дом";
+}
+
+// При выборе нового дома обновляем адрес
+map.on("click", function(event) {
+    const latitude = event.latlng.lat;
+    const longitude = event.latlng.lng;
+
+    selectPoint(latitude, longitude);
+
+    previewSelectedAddress(latitude, longitude);
+
+    document.getElementById(
+        "map-status"
+    ).textContent =
+        "Новая точка выбрана. Проверь адрес и сохрани.";
 });
+
 

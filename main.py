@@ -235,7 +235,10 @@ def forecast_api():
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template(
+        "index.html",
+        settings=get_settings()
+    )
 
 
 @app.route("/api/sensors")
@@ -670,6 +673,42 @@ def settings_page():
         saved=saved,
         error=error
     )
+
+
+
+@app.route("/api/map/address", methods=["GET"])
+def preview_map_address():
+    import math
+
+    try:
+        latitude = float(request.args["lat"])
+        longitude = float(request.args["lon"])
+    except (KeyError, ValueError, TypeError):
+        return jsonify({
+            "error": "Некорректные координаты"
+        }), 400
+
+    if not (
+        math.isfinite(latitude)
+        and math.isfinite(longitude)
+        and 54.5 <= latitude <= 55.5
+        and 72.5 <= longitude <= 74.5
+    ):
+        return jsonify({
+            "error": "Выбери точку в Омске или окрестностях"
+        }), 400
+
+    address = get_address(latitude, longitude)
+
+    if not address:
+        address = (
+            f"Точка на карте: "
+            f"{latitude:.6f}, {longitude:.6f}"
+        )
+
+    return jsonify({
+        "address": address
+    })
 
 
 
@@ -1272,4 +1311,8 @@ def forecast_scenarios_api():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=True
+    )

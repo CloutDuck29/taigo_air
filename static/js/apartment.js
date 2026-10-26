@@ -66,11 +66,17 @@ updateWindowArrow();
 apartmentForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    if (selectedLat === null || selectedLon === null) {
-        apartmentStatus.textContent =
-            "Сначала выбери дом на карте.";
-        return;
-    }
+if (selectedLat === null || selectedLon === null) {
+    const message = "Сначала выбери дом на карте.";
+
+    apartmentStatus.textContent = message;
+
+    document.getElementById(
+        "map-save-status"
+    ).textContent = message;
+
+    return;
+}
 
     const data = {
         latitude: selectedLat,
@@ -87,13 +93,13 @@ apartmentForm.addEventListener("submit", async (event) => {
         )
     };
 
-    const button = apartmentForm.querySelector(
-        'button[type="submit"]'
-    );
+const button = document.getElementById("map-save-button");
 
     button.disabled = true;
     apartmentStatus.textContent = "Сохранение...";
-
+document.getElementById(
+    "map-save-status"
+).textContent = "Сохраняем расположение...";
     try {
         const response = await fetch(
             "/api/map/apartment",
@@ -117,7 +123,17 @@ apartmentForm.addEventListener("submit", async (event) => {
         document.getElementById(
             "apartment-address"
         ).textContent = result.address;
+document.getElementById(
+    "map-address-preview"
+).textContent = result.address;
 
+document.getElementById(
+    "map-address-state"
+).textContent = "Сохранённый дом";
+
+document.getElementById(
+    "map-save-status"
+).textContent = "Расположение сохранено";
         document.getElementById(
             "map-status"
         ).textContent = "Точка и параметры сохранены.";
@@ -135,6 +151,9 @@ if (typeof loadIndustry === "function") {
 
     } catch (error) {
         apartmentStatus.textContent = error.message;
+        document.getElementById(
+    "map-save-status"
+).textContent = "Не удалось сохранить: " + error.message;
         console.error(error);
     } finally {
         button.disabled = false;

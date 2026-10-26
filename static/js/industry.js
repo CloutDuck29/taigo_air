@@ -70,38 +70,55 @@ async function loadIndustry() {
             popup.append(popupTitle, popupInfo);
             marker.bindPopup(popup);
 
-            // Создаём строку таблицы
-            const row = document.createElement("tr");
 
-            const values = [
-                source.name,
-                source.distance_km,
-                source.industry ?? "Не указан",
-                analysis
-                    ? `${analysis.bearing}° (${analysis.bearing_name})`
-                    : "Нет данных",
-                analysis?.position ?? "Нет данных"
-            ];
+// Создаём карточку предприятия
+const card = document.createElement("button");
+card.type = "button";
+card.className = "industry-card";
 
-            for (const value of values) {
-                const cell = document.createElement("td");
-                cell.textContent = value;
-                row.appendChild(cell);
-            }
+const title = document.createElement("div");
+title.className = "industry-name";
+title.textContent = source.name;
 
-            // Нажатие на строку приближает предприятие
-            row.style.cursor = "pointer";
+const meta = document.createElement("div");
+meta.className = "industry-meta";
 
-            row.addEventListener("click", () => {
-                map.setView(
-                    [source.latitude, source.longitude],
-                    14
-                );
+const values = [
+  `${source.distance_km ?? "—"} км`,
+  source.industry ?? "Тип не указан",
+  analysis
+    ? `${analysis.bearing}° (${analysis.bearing_name})`
+    : "Направление: нет данных",
+  analysis?.position ?? "Ветер: нет данных"
+];
 
-                marker.openPopup();
-            });
+values.forEach(value => {
+  const tag = document.createElement("span");
+  tag.className = "industry-tag";
+  tag.textContent = value;
+  meta.appendChild(tag);
+});
 
-            table.appendChild(row);
+card.append(title, meta);
+
+// При нажатии показываем предприятие на карте
+card.addEventListener("click", () => {
+  map.setView(
+    [source.latitude, source.longitude],
+    14
+  );
+
+  marker.openPopup();
+
+  document.getElementById("map-container")
+    ?.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+});
+
+table.appendChild(card);
+
         }
 
     } catch (error) {
