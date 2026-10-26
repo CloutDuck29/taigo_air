@@ -10,6 +10,20 @@
 <meta name="theme-color" content="#10449a">
 <title>TaigoAir — Главная</title>
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+    <link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  defer>
+</script>
+
+<script
+  src="{{ url_for('static', filename='js/home_air_map.js') }}"
+  defer>
+</script>
 
 <style>
 
@@ -530,7 +544,7 @@ height: calc(
   overflow-y:auto;
   overscroll-behavior:contain;
 
-  background:rgba(46,37,28,.98);
+  background: rgba(38, 33, 28, 0.995);
   color:white;
 
   border-radius:30px 30px 0 0;
@@ -979,6 +993,555 @@ input[type="number"]:focus-visible {
     border-color: var(--yellow);
     box-shadow: 0 0 0 2px rgba(255, 194, 71, 0.25);
 }
+    /* ===== КАРТА НА ГЛАВНОЙ ===== */
+
+.air-map-panel {
+  padding: 18px;
+}
+
+.air-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.air-section-heading svg {
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+  color: var(--yellow);
+}
+
+.air-section-heading h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.air-map-description {
+  margin: 0 0 13px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+#home-air-map {
+  width: 100%;
+  height: 230px;
+  overflow: hidden;
+  border-radius: 18px;
+  background: rgba(15, 29, 35, .65);
+}
+
+.air-map-status {
+  margin: 12px 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.air-map-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  padding: 13px;
+  margin-top: 12px;
+
+  border-radius: 15px;
+  background: rgba(36, 29, 23, .55);
+
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.air-map-link svg {
+  width: 18px;
+  height: 18px;
+  color: var(--yellow);
+}
+
+#home-air-map .leaflet-container {
+  font-family: inherit;
+}
+
+#home-air-map .leaflet-control-attribution {
+  font-size: 9px !important;
+  background: rgba(255, 255, 255, .8);
+}
+
+#home-air-map .leaflet-control-attribution a {
+  color: #275477;
+}
+
+#home-air-map .leaflet-popup-content-wrapper,
+#home-air-map .leaflet-popup-tip {
+  background: #22343c;
+  color: #fff;
+}
+
+@media (max-width: 390px) {
+  .air-map-panel {
+    padding: 16px;
+  }
+
+  #home-air-map {
+    height: 205px;
+  }
+}
+
+    /* ===== СПРАВОЧНИК ЗАГРЯЗНИТЕЛЕЙ ===== */
+
+.air-explainer {
+  margin: 15px 0;
+  padding: 13px;
+
+  border: 1px solid rgba(255, 255, 255, .16);
+  border-radius: 16px;
+
+  background: rgba(20, 38, 43, .45);
+}
+
+.air-explainer summary {
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.air-explainer-item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, .10);
+}
+
+.air-explainer-item strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+
+.air-explainer-item p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+    /* ===== ОБЪЯСНЕНИЕ ПОКАЗАТЕЛЕЙ ===== */
+
+#air-modal .detail-row[data-pollutant] {
+  cursor: pointer;
+  border-radius: 10px;
+  padding-left: 8px;
+  padding-right: 8px;
+  transition: background .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#air-modal .detail-row[data-pollutant]:active {
+  background: rgba(255, 255, 255, .10);
+}
+
+#air-modal .detail-row[data-pollutant]:focus-visible {
+  outline: 2px solid var(--yellow);
+}
+
+#air-modal .detail-row[data-pollutant]::after {
+  content: "›";
+  display: block;
+  width: 18px;
+  flex: 0 0 18px;
+
+  color: var(--yellow);
+  font-size: 23px;
+  font-weight: 400;
+  text-align: center;
+  line-height: 1;
+}
+
+#air-modal .detail-row[data-pollutant] strong {
+  margin-left: auto;
+}
+
+.pollutant-info-section {
+  margin-top: 18px;
+  padding: 14px;
+  border-radius: 17px;
+
+  background: rgba(20, 38, 43, .45);
+  border: 1px solid rgba(255, 255, 255, .12);
+}
+
+.pollutant-info-section h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+.pollutant-info-section p {
+  margin: 0;
+  color: rgba(255, 255, 255, .88);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+#pollutant-info-modal .modal-sheet {
+  max-height: 85dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+    .back-modal {
+  display: grid;
+  place-items: center;
+
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: rgba(255, 255, 255, .13);
+  color: white;
+}
+
+.back-modal svg {
+  width: 21px;
+  height: 21px;
+  stroke-width: 1.8;
+}
+
+.back-modal:active {
+  transform: scale(.94);
+}
+    /* ===== ПРЕВЫШЕНИЯ ПОКАЗАТЕЛЕЙ ===== */
+
+.detail-row.is-exceeded strong {
+  color: var(--yellow);
+  font-weight: 750;
+}
+    /* Значения с превышением */
+
+#air-modal .detail-row.is-exceeded > strong {
+  color: var(--yellow);
+  font-weight: 750;
+}
+
+/* Предупреждение возле числа */
+
+#air-modal .detail-row.is-exceeded > strong::before {
+  content: "!";
+  display: inline-grid;
+  place-items: center;
+
+  width: 16px;
+  height: 16px;
+
+  margin-right: 7px;
+  vertical-align: 2px;
+
+  border-radius: 50%;
+
+  background: var(--yellow);
+  color: #291c00;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+    /* ===== ЕДИНОЕ ВЫРАВНИВАНИЕ ПОКАЗАТЕЛЕЙ ===== */
+
+#air-modal .detail-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, auto) 18px;
+  align-items: center;
+  column-gap: 10px;
+
+  min-height: 58px;
+  padding: 12px 8px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, .11);
+}
+
+#air-modal .detail-row > span:first-child {
+  min-width: 0;
+  grid-column: 1;
+
+  font-size: 14px;
+  text-align: left;
+}
+
+#air-modal .detail-row > strong {
+  grid-column: 2;
+
+  min-width: 0;
+  margin: 0;
+
+  font-size: 15px;
+  font-weight: 650;
+
+  text-align: right;
+  overflow-wrap: normal;
+  white-space: nowrap;
+}
+
+/* Стрелки справа */
+
+#air-modal .detail-row[data-pollutant]::after {
+  grid-column: 3;
+  justify-self: center;
+}
+
+/* Строки без перехода */
+
+#air-modal .detail-row:not([data-pollutant])::after {
+  content: "";
+  display: block;
+  grid-column: 3;
+  width: 18px;
+}
+
+/* Длинные значения на маленьких экранах */
+
+@media (max-width: 390px) {
+  #air-modal .detail-row {
+    column-gap: 7px;
+  }
+
+  #air-modal .detail-row > strong {
+    font-size: 13px;
+  }
+
+  #air-modal .detail-row > span:first-child {
+    font-size: 13px;
+  }
+}
+    #air-modal .detail-section {
+  margin-top: 19px;
+  margin-bottom: 8px;
+}
+
+#air-modal .source-note {
+  margin-top: 7px;
+  margin-bottom: 10px;
+}
+
+#air-modal .modal-header {
+  margin-bottom: 15px;
+}
+    /* ===== УПРАВЛЕНИЕ МИНИ-КАРТОЙ ===== */
+
+.home-map-container {
+  position: relative;
+  width: 100%;
+}
+
+#home-air-map {
+  touch-action: pan-y;
+}
+
+#home-air-map.map-interactive {
+  touch-action: none;
+}
+
+.home-map-control-button {
+  position: absolute;
+  right: 14px;
+  bottom: 18px;
+  z-index: 500;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 46px;
+  height: 46px;
+
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 50%;
+
+  background: rgba(27,40,46,.92);
+  color: white;
+
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-map-control-button svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.8;
+}
+
+.home-map-control-button.active {
+  background: #ffc247;
+  color: #202a30;
+}
+
+    /* ===== ВЫВОД TAIGOPLUME ===== */
+
+.home-wind-analysis {
+  margin-top: 12px;
+  padding: 14px;
+
+  border-radius: 18px;
+  background: rgba(20, 38, 43, .45);
+  border: 1px solid rgba(255,255,255,.13);
+}
+
+.home-wind-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 11px;
+
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.home-wind-heading svg {
+  width: 19px;
+  height: 19px;
+  color: var(--yellow);
+}
+
+.home-wind-conclusion {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.home-wind-sources {
+  display: grid;
+  gap: 8px;
+}
+
+.home-wind-source {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 11px 12px;
+
+  border-radius: 13px;
+  background: rgba(12, 29, 38, .42);
+
+  font-size: 12px;
+}
+
+.home-wind-source-name {
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.home-wind-source-distance {
+  flex-shrink: 0;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.home-wind-disclaimer {
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.55;
+}
+    /* Компактный вывод под картой */
+
+.home-wind-analysis {
+  margin-top: 12px;
+  padding: 13px;
+
+  border-radius: 17px;
+  background: rgba(20, 38, 43, .45);
+  border: 1px solid rgba(255, 255, 255, .13);
+}
+
+.home-wind-conclusion {
+  margin: 0 0 10px;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.5;
+}
+
+.home-wind-sources {
+  display: grid;
+  gap: 7px;
+}
+
+.home-wind-source {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+
+  padding: 9px 11px;
+
+  border-radius: 12px;
+  background: rgba(12, 29, 38, .42);
+
+  font-size: 12px;
+}
+
+.home-wind-source-name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.4;
+}
+
+.home-wind-source-distance {
+  flex-shrink: 0;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.home-wind-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px;
+
+  border: 0;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, .08);
+  color: white;
+
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.home-wind-more svg {
+  width: 16px;
+  height: 16px;
+}
+
+.home-wind-more[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.home-wind-disclaimer {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.home-wind-more[hidden],
+.home-wind-source[hidden] {
+  display: none !important;
+}
 </style>
 
 
@@ -1145,7 +1708,74 @@ input[type="number"]:focus-visible {
     </button>
 
   </div>
+    <!-- КАРТА ПЕРЕНОСА ВОЗДУХА -->
 
+<section class="glass air-map-panel section">
+
+  <div class="air-section-heading">
+    <i data-lucide="map-pinned"></i>
+    <h2>Ветер и предприятия</h2>
+  </div>
+
+<div class="home-map-container">
+
+  <div
+    id="home-air-map"
+    role="region"
+    aria-label="Карта направления ветра">
+  </div>
+
+  <button
+    type="button"
+    id="home-map-interaction-toggle"
+    class="home-map-control-button"
+    aria-label="Включить управление картой"
+    aria-pressed="false"
+    title="Управление картой">
+
+    <i data-lucide="hand"></i>
+
+  </button>
+
+</div>
+
+  <p
+    id="home-air-map-status"
+    class="air-map-status"
+    role="status">
+    Загружаем карту...
+  </p>
+
+<div class="home-wind-analysis">
+
+  <p
+    id="home-wind-conclusion"
+    class="home-wind-conclusion"
+    aria-live="polite">
+    Проверяем направление ветра...
+  </p>
+
+  <div
+    id="home-wind-sources"
+    class="home-wind-sources">
+  </div>
+
+  <button
+    id="home-wind-show-more"
+    class="home-wind-more"
+    type="button"
+    hidden>
+    Показать все
+    <i data-lucide="chevron-down"></i>
+  </button>
+
+  <p class="home-wind-disclaimer">
+    Направление ветра, не факт загрязнения.
+  </p>
+
+</div>
+
+</section>
   <!-- РЕКОМЕНДАЦИЯ -->
   <section class="glass recommendation section">
 
@@ -1321,10 +1951,21 @@ input[type="number"]:focus-visible {
       <strong id="detail-aqi">—</strong>
     </div>
 
-    <div class="detail-row">
-      <span>Оценка</span>
-      <strong id="detail-aqi-label">—</strong>
-    </div>
+<div class="detail-row"
+     data-pollutant="aqi"
+     role="button"
+     tabindex="0"
+     aria-label="Объяснение индекса качества воздуха"
+     onclick="openPollutantInfo('aqi')"
+     onkeydown="
+       if(event.key === 'Enter' || event.key === ' ') {
+         event.preventDefault();
+         openPollutantInfo('aqi');
+       }
+     ">
+  <span>Оценка</span>
+  <strong id="detail-aqi-label">—</strong>
+</div>
 
     <div class="detail-row">
       <span>PM2.5</span>
@@ -1369,6 +2010,52 @@ input[type="number"]:focus-visible {
       ↻ Обновить наружные данные
     </button>
     <p id="air-refresh-status" class="modal-note"></p>
+  </div>
+</div>
+
+<!-- МОДАЛЬНОЕ ОКНО: ОБЪЯСНЕНИЕ ПОКАЗАТЕЛЯ -->
+
+<div class="modal" id="pollutant-info-modal">
+  <div class="modal-sheet">
+
+    <div class="modal-header">
+      <h2 id="pollutant-info-title">Показатель</h2>
+
+<button
+  type="button"
+  class="back-modal"
+  onclick="backToAirModal()"
+  aria-label="Назад к показателям">
+  <i data-lucide="arrow-left"></i>
+</button>
+    </div>
+
+    <div class="pollutant-info-section">
+      <h3>Что это?</h3>
+      <p id="pollutant-info-description"></p>
+    </div>
+
+    <div class="pollutant-info-section">
+      <h3>В чём измеряется?</h3>
+      <p id="pollutant-info-unit"></p>
+    </div>
+
+    <div class="pollutant-info-section">
+      <h3>Чем опасно повышение?</h3>
+      <p id="pollutant-info-health"></p>
+    </div>
+
+    <div class="pollutant-info-section">
+      <h3>Что делать?</h3>
+      <p id="pollutant-info-advice"></p>
+    </div>
+
+    <p class="modal-note">
+      Справочная информация. Не является
+      медицинским заключением. Оценка риска
+      зависит от концентрации и времени воздействия.
+    </p>
+
   </div>
 </div>
 
@@ -1575,7 +2262,7 @@ input[type="number"]:focus-visible {
       ↻ Обновить измерения
     </button>
 
-<a href="/home"
+<a href="/map"
    class="action full"
    style="margin-top:12px">
   <i data-lucide="house"
@@ -1586,7 +2273,7 @@ input[type="number"]:focus-visible {
        vertical-align:middle;
        margin-right:7px;
      "></i>
-  Настройки моего дома →
+  Настройки квартиры
 </a>
 
   </div>
@@ -1657,6 +2344,245 @@ async function api(url,options={}) {
   return data;
 }
 
+/* ===== СПРАВОЧНИК КАЧЕСТВА ВОЗДУХА ===== */
+
+const pollutantInfo = {
+  co2: {
+    title: "CO₂ — углекислый газ",
+
+    description:
+      "Газ, который люди выделяют при дыхании. " +
+      "В помещении его накопление часто указывает " +
+      "на недостаточный воздухообмен.",
+
+    unit:
+      "ppm — количество частей CO₂ на миллион " +
+      "частей воздуха.",
+
+    health:
+      "Повышенный CO₂ часто сопровождает " +
+      "недостаточную вентиляцию. Это может " +
+      "сопровождаться духотой и жалобами " +
+      "на сонливость или снижение концентрации. " +
+      "Обычные бытовые значения CO₂ сами по себе " +
+      "не означают отравление.",
+
+    advice:
+      "Проверить вентиляцию помещения. " +
+      "Перед открытием окна учитывать качество " +
+      "наружного воздуха."
+  },
+
+  pm1: {
+    title: "PM1 — очень мелкие частицы",
+
+    description:
+      "Взвешенные частицы диаметром до 1 мкм. " +
+      "Могут присутствовать в дыме, аэрозолях " +
+      "и продуктах горения.",
+
+    unit:
+      "мкг/м³ — микрограммы частиц " +
+      "в кубическом метре воздуха.",
+
+    health:
+      "Очень мелкие частицы способны проникать " +
+      "в дыхательные пути. Их воздействие зависит " +
+      "от концентрации, состава и длительности.",
+
+    advice:
+      "Уменьшить источники дыма и аэрозолей. " +
+      "Проверять PM2.5 и наружные условия " +
+      "перед проветриванием."
+  },
+
+  pm25: {
+    title: "PM2.5 — мелкодисперсные частицы",
+
+    description:
+      "Частицы диаметром до 2,5 мкм. " +
+      "Возникают, в частности, при горении топлива " +
+      "и присутствуют в дыме и загрязнённом воздухе.",
+
+    unit:
+      "мкг/м³ — микрограммы на кубический метр.",
+
+    health:
+      "При повышенных концентрациях могут " +
+      "раздражать дыхательные пути, ухудшать " +
+      "течение астмы. Длительное воздействие " +
+      "связано с повышенными сердечно-сосудистыми " +
+      "и респираторными рисками.",
+
+    advice:
+      "Сократить источники частиц в помещении. " +
+      "Если загрязнение снаружи высокое, " +
+      "избегать проветривания в наиболее " +
+      "загрязнённые периоды."
+  },
+
+  pm10: {
+    title: "PM10 — взвешенные частицы",
+
+    description:
+      "Частицы диаметром до 10 мкм. " +
+      "Включают часть пыли, пыльцы и других " +
+      "атмосферных аэрозолей.",
+
+    unit:
+      "мкг/м³ — микрограммы на кубический метр.",
+
+    health:
+      "Повышенное воздействие может вызывать " +
+      "раздражение дыхательных путей и ухудшать " +
+      "симптомы респираторных заболеваний.",
+
+    advice:
+      "Снизить запылённость внутри помещения. " +
+      "Оценивать наружные условия перед открытием окна."
+  },
+
+  no2: {
+    title: "NO₂ — диоксид азота",
+
+    description:
+      "Газ, образующийся при высокотемпературном " +
+      "горении топлива. Его источниками могут быть " +
+      "транспорт, энергетика и промышленность.",
+
+    unit:
+      "мкг/м³ — микрограммы газа " +
+      "в кубическом метре воздуха.",
+
+    health:
+      "При повышенных концентрациях может " +
+      "раздражать дыхательные пути и ухудшать " +
+      "течение астмы. Особенно важен для людей " +
+      "с заболеваниями дыхательной системы.",
+
+    advice:
+      "При высоком загрязнении учитывать наружные " +
+      "условия, особенно рядом с интенсивным " +
+      "движением транспорта."
+  },
+
+  so2: {
+    title: "SO₂ — диоксид серы",
+
+    description:
+      "Газ, образующийся при сжигании " +
+      "серосодержащего топлива и некоторых " +
+      "промышленных процессах.",
+
+    unit:
+      "мкг/м³ — микрограммы на кубический метр.",
+
+    health:
+      "Повышенные концентрации могут раздражать " +
+      "дыхательные пути и провоцировать симптомы " +
+      "у людей с астмой.",
+
+    advice:
+      "При неблагоприятных наружных условиях " +
+      "ограничивать воздействие загрязнённого " +
+      "воздуха и учитывать его при проветривании."
+  },
+
+  co: {
+    title: "CO — угарный газ",
+
+    description:
+      "Бесцветный газ без запаха. Образуется " +
+      "при неполном сгорании топлива.",
+
+    unit:
+      "В наружной модели TaigoAir — мкг/м³. " +
+      "Бытовые газоанализаторы также могут " +
+      "показывать ppm.",
+
+    health:
+      "Угарный газ связывается с гемоглобином " +
+      "и нарушает перенос кислорода. " +
+      "Высокие концентрации могут вызвать " +
+      "тяжёлое отравление.",
+
+    advice:
+      "При подозрении на утечку CO в помещении " +
+      "немедленно выйти на свежий воздух " +
+      "и вызвать экстренные службы. " +
+      "Прогноз наружного CO не заменяет " +
+      "домашний сигнализатор угарного газа."
+  },
+
+  o3: {
+    title: "O₃ — приземный озон",
+
+    description:
+      "Газ, образующийся в атмосфере " +
+      "в результате фотохимических реакций. " +
+      "Не следует путать с озоновым слоем.",
+
+    unit:
+      "мкг/м³ — микрограммы на кубический метр.",
+
+    health:
+      "При повышенных концентрациях может " +
+      "вызывать кашель, раздражение дыхательных " +
+      "путей и снижение функции лёгких.",
+
+    advice:
+      "При высоком приземном озоне лучше " +
+      "сократить интенсивные нагрузки на улице, " +
+      "особенно чувствительным людям."
+  },
+
+  aqi: {
+    title: "AQI — индекс качества воздуха",
+
+    description:
+      "Сводный индекс загрязнения наружного " +
+      "воздуха. TaigoAir показывает европейский AQI.",
+
+    unit:
+      "Безразмерный индекс. Чем больше значение, " +
+      "тем хуже оценка качества воздуха.",
+
+    health:
+      "Повышенный индекс указывает на возможные " +
+      "риски от загрязнителей. Конкретное влияние " +
+      "зависит от вещества, концентрации " +
+      "и длительности воздействия.",
+
+    advice:
+      "При высоком AQI посмотреть конкретные " +
+      "загрязнители и учитывать наружное качество " +
+      "воздуха перед проветриванием."
+  }
+};
+function backToAirModal() {
+  closeModal();
+  openModal("air-modal");
+}
+
+function openPollutantInfo(key) {
+  const info = pollutantInfo[key];
+
+  if (!info) return;
+
+  put("pollutant-info-title", info.title);
+  put("pollutant-info-description", info.description);
+  put("pollutant-info-unit", info.unit);
+  put("pollutant-info-health", info.health);
+  put("pollutant-info-advice", info.advice);
+
+closeModal();
+openModal("pollutant-info-modal");
+
+if (window.lucide) {
+  lucide.createIcons();
+}
+}
+
 /* Модальные окна */
 
 function openModal(id) {
@@ -1684,6 +2610,48 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Escape") closeModal();
 });
 
+/* ===== НАЖАТИЕ НА ПОКАЗАТЕЛИ ===== */
+
+const pollutantRows = {
+  "air-co2": "co2",
+  "air-pm1": "pm1",
+  "air-indoor-pm25": "pm25",
+  "air-indoor-pm10": "pm10",
+
+  "detail-aqi": "aqi",
+  "outside-pm25": "pm25",
+  "outside-pm10": "pm10",
+  "outside-no2": "no2",
+  "outside-so2": "so2",
+  "outside-co": "co",
+  "outside-o3": "o3"
+};
+
+for (const [id, key] of Object.entries(pollutantRows)) {
+  const element = document.getElementById(id);
+  const row = element?.closest(".detail-row");
+
+  if (!row) continue;
+
+  row.dataset.pollutant = key;
+  row.tabIndex = 0;
+  row.setAttribute("role", "button");
+  row.setAttribute(
+    "aria-label",
+    `Объяснение показателя ${pollutantInfo[key].title}`
+  );
+
+  row.addEventListener("click", () => {
+    openPollutantInfo(key);
+  });
+
+  row.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openPollutantInfo(key);
+    }
+  });
+}
 /* Оценки */
 
 function co2Assessment(n) {
@@ -1728,15 +2696,89 @@ function shortAqiAssessment(n) {
   if (n <= 100) return "Очень плохое";
   return "Критическое";
 }
+/* ===== ВЫДЕЛЕНИЕ ПРЕВЫШЕНИЙ ===== */
 
+function highlightAirValue(id, value, limit) {
+  const element = document.getElementById(id);
+  const row = element?.closest(".detail-row");
+
+  if (!row) return;
+
+  const number = Number(value);
+  const threshold = Number(limit);
+
+  const exceeded =
+    value !== null &&
+    value !== undefined &&
+    value !== "" &&
+    Number.isFinite(number) &&
+    Number.isFinite(threshold) &&
+    number > threshold;
+
+  row.classList.toggle("is-exceeded", exceeded);
+
+  if (exceeded) {
+    row.setAttribute(
+      "aria-label",
+      `Превышен установленный порог: ${number}`
+    );
+  } else {
+    row.removeAttribute("aria-label");
+  }
+}
+/* ===== ОБЩИЕ ПРЕДУПРЕЖДЕНИЯ ===== */
+
+function updateAirWarnings() {
+  const indoor = state.sensors;
+  const outdoor = state.air;
+
+  const warnings = [];
+
+  if (indoor?.co2 != null &&
+      indoor.co2 > CO2_LIMIT) {
+    warnings.push(
+      `CO₂ выше выбранного порога ${CO2_LIMIT} ppm`
+    );
+  }
+
+  if (indoor?.pm25 != null &&
+      indoor.pm25 > PM25_LIMIT) {
+    warnings.push(
+      `PM2.5 внутри выше предела ${PM25_LIMIT} мкг/м³`
+    );
+  }
+
+  if (outdoor?.status === "ok" &&
+      outdoor.aqi != null) {
+
+    const aqi = Number(outdoor.aqi);
+
+    if (Number.isFinite(aqi) && aqi > 60) {
+      warnings.push(
+        `По модели наружный AQI составляет ${aqi}. ` +
+        "Качество воздуха плохое или очень плохое; " +
+        "проверь наружные загрязнители."
+      );
+    }
+  }
+
+  put(
+    "detail-warnings",
+    warnings.length
+      ? warnings.join(". ")
+      : "По доступным показателям предупреждений нет."
+  );
+}
 /* Датчики */
 
 async function refreshSensors() {
   try {
-    const d=await api("/api/sensors");
-    state.sensors=d;
+const d=await api("/api/sensors");
+state.sensors=d;
 
-    put("main-co2",value(d.co2));
+updateAirWarnings();
+
+put("main-co2",value(d.co2));
     put("main-pm25",value(d.pm25));
 
     put("co2-assessment",co2Assessment(d.co2));
@@ -1746,7 +2788,13 @@ async function refreshSensors() {
     put("air-pm1",value(d.pm1));
     put("air-indoor-pm25",value(d.pm25));
     put("air-indoor-pm10",value(d.pm10));
+highlightAirValue("air-co2", d.co2, CO2_LIMIT);
 
+highlightAirValue(
+  "air-indoor-pm25",
+  d.pm25,
+  PM25_LIMIT
+);
     put("detail-co2",value(d.co2));
     put("detail-co2-assessment",co2Assessment(d.co2));
 
@@ -1831,27 +2879,8 @@ const connection = simulation
     put("detail-updated",value(d.timestamp));
 
 
-const warnings = [];
 
-if (d.co2 != null && d.co2 > CO2_LIMIT) {
-  warnings.push(
-    `CO₂ превышает порог ${CO2_LIMIT} ppm`
-  );
-}
-
-if (d.pm25 != null && d.pm25 > PM25_LIMIT) {
-  warnings.push(
-    `PM2.5 превышает предел ${PM25_LIMIT} мкг/м³`
-  );
-}
-
-
-put(
-  "detail-warnings",
-  warnings.length
-    ? warnings.join(". ")
-    : "Предупреждений нет"
-);
+updateAirWarnings();
 
 $("device-dot").style.background =
   simulation ? "#ffbd17" : "#8ab4ff";
@@ -1861,6 +2890,8 @@ $("device-dot").style.background =
 
 } catch(error) {
   state.sensors = null;
+  highlightAirValue("air-co2", null, CO2_LIMIT);
+highlightAirValue("air-indoor-pm25", null, PM25_LIMIT);
 
   put("device-connection", "Нет связи с сервером");
   put("detail-connection", "Ошибка подключения");
@@ -1953,15 +2984,45 @@ async function refreshAir() {
   put("air-refresh-status","Обновляем...");
 
   try {
-    const d=await api("/api/air-quality");
-    state.air=d;
+const d=await api("/api/air-quality");
+state.air=d;
 
-    const assessment=aqiAssessment(d.aqi);
+updateAirWarnings();
 
-put("air-quality-label",shortAqiAssessment(d.aqi));
-    put("detail-aqi",value(d.aqi));
-    put("detail-aqi-label",assessment);
+const assessment=aqiAssessment(d.aqi);
 
+put("air-quality-label", shortAqiAssessment(d.aqi));
+put("detail-aqi", value(d.aqi));
+put("detail-aqi-label", assessment);
+
+const aqi = d.aqi == null ? NaN : Number(d.aqi);
+
+const aqiColor =
+  !Number.isFinite(aqi)
+    ? "#ffffff"
+    : aqi <= 20
+      ? "#79D9A0"
+      : aqi <= 40
+        ? "#B7E98A"
+        : aqi <= 60
+          ? "#FFC247"
+          : aqi <= 80
+            ? "#FF963E"
+            : aqi <= 100
+              ? "#FF6868"
+              : "#C75676";
+
+[
+  "detail-aqi",
+  "detail-aqi-label",
+  "air-quality-label"
+].forEach(id => {
+  const element = document.getElementById(id);
+
+  if (element) {
+    element.style.color = aqiColor;
+  }
+});
     const fields={
       "outside-pm25":d.pm25,
       "outside-pm10":d.pm10,
@@ -1977,7 +3038,11 @@ put("air-quality-label",shortAqiAssessment(d.aqi));
 
     put("air-refresh-status","Данные обновлены");
 
-  } catch(error) {
+} catch(error) {
+    state.air = null;
+highlightAirValue("detail-aqi", null, 60);
+    updateAirWarnings();
+
     put("air-quality-label","Нет данных");
     put("air-refresh-status",error.message);
     console.error("Air:",error);
@@ -2098,9 +3163,9 @@ async function refreshRecommendation() {
 if (decision === "Подходящего сценария нет") {
   title = "Подходящий сценарий не найден";
   duration = "Время не определено";
-  explanation =
-    "Ни один из рассчитанных сценариев " +
-    "не удовлетворяет всем заданным ограничениям.";
+
+  explanation = r.reason ||
+    "Ни один из рассчитанных вариантов не подходит.";
 }
 
 
