@@ -1,4 +1,3 @@
-
 {
   "sources": [
     {
@@ -30,6 +29,131 @@
       "source": "Global Energy Monitor",
       "source_url": "https://www.gem.wiki/Omsk_CHP-5_power_station",
       "coordinate_type": "Местоположение электростанции"
+    },
+    {
+      "id": "omsk-chp-3",
+      "name": "Омская ТЭЦ-3",
+      "industry": "Теплоэнергетика",
+      "latitude": 55.06777,
+      "longitude": 73.259317,
+      "source": "Global Energy Monitor",
+      "source_url": "https://www.gem.wiki/Omsk_CHP-3_power_station",
+      "coordinate_type": "Местоположение электростанции"
+    },
+    {
+      "id": "omsk-chp-4",
+      "name": "Омская ТЭЦ-4",
+      "industry": "Теплоэнергетика",
+      "latitude": 55.084459,
+      "longitude": 73.211755,
+      "source": "Global Energy Monitor",
+      "source_url": "https://www.gem.wiki/Omsk_CHP-4_power_station",
+      "coordinate_type": "Местоположение электростанции"
+    },
+    {
+      "id": "omsk-carbon",
+      "name": "Омсктехуглерод",
+      "industry": "Химическая промышленность",
+      "latitude": 54.938411,
+      "longitude": 73.48104,
+      "source": "Яндекс Карты / официальный сайт предприятия",
+      "source_url": "https://www.omskcarbongroup.com/contacts/manufacture/",
+      "coordinate_type": "Приблизительная адресная точка производственной площадки"
+    },
+    {
+      "id": "omsktransmash",
+      "name": "Омсктрансмаш",
+      "industry": "Машиностроение",
+      "latitude": 54.9709016,
+      "longitude": 73.3937532,
+      "source": "Preserved Tanks (публичный геокаталог)",
+      "source_url": "https://preservedtanks.com/Locations.aspx?LocationCategoryId=2640",
+      "coordinate_type": "Приблизительная точка производственной площадки; требует сверки с OSM"
+    },
+    {
+      "id": "po-polyot",
+      "name": "ПО «Полёт»",
+      "industry": "Машиностроение",
+      "latitude": 54.955619,
+      "longitude": 73.41381,
+      "source": "Komandirovka.ru (GPS-каталог)",
+      "source_url": "https://www.komandirovka.ru/sights/omsk/proizvodstvennoe-obyedinenie-polet/",
+      "coordinate_type": "Приблизительная точка по адресу производственной площадки; требует сверки с OSM"
+    },
+    {
+      "id": "omsk-chp-2",
+      "name": "Омская ТЭЦ-2",
+      "industry": "Теплоэнергетика",
+      "latitude": 54.9369777,
+      "longitude": 73.3971332,
+      "source": "Maptons — точка ТЭЦ-2",
+      "source_url": "https://lv.maptons.com/p/11883713030",
+      "coordinate_type": "Приблизительная точка электростанции по геокаталогу; не подтверждена как источник выброса",
+      "address": "Омск, ул. Уральская, 2/1"
+    },
+    {
+      "id": "poliom",
+      "name": "Полиом — Омский завод полипропилена",
+      "industry": "Химическая промышленность",
+      "latitude": 55.080045,
+      "longitude": 73.297218,
+      "source": "Яндекс Карты — Красноярский тракт, 137",
+      "source_url": "https://maps.yandex.ru/?text=644035%2C+%D0%9E%D0%BC%D1%81%D0%BA%D0%B0%D1%8F+%D0%BE%D0%B1%D0%BB%D0%B0%D1%81%D1%82%D1%8C%2C+%D0%B3.+%D0%9E%D0%BC%D1%81%D0%BA%2C+%D1%82%D1%80%D0%B0%D0%BA%D1%82+%D0%9A%D1%80%D0%B0%D1%81%D0%BD%D0%BE%D1%8F%D1%80%D1%81%D0%BA%D0%B8%D0%B9%2C+%D1%81%D1%82%D1%80.+137",
+      "coordinate_type": "Адресная точка; не центр производственной площадки",
+      "address": "Омск, Красноярский тракт, строение 137"
+    },
+    {
+      "id": "cordiant-omsk",
+      "name": "Кордиант — омский филиал (Кордиант-Восток)",
+      "industry": "Шинная промышленность",
+      "latitude": 54.959269,
+      "longitude": 73.439466,
+      "source": "Яндекс Карты — П. В. Будеркина, 2А",
+      "source_url": "https://yandex.com/maps/66/omsk/house/ulitsa_buderkina_2a/Y0oYcgRpTUMBQFtufXV0eH5lbA%3D%3D/",
+      "coordinate_type": "Адресная точка Кордиант; производственная площадка шире",
+      "address": "Омск, ул. П. В. Будеркина, 2А"
+    },
+    {
+      "id": "omo-baranova",
+      "name": "ОМО им. П. И. Баранова",
+      "industry": "Машиностроение",
+      "latitude": 54.96054,
+      "longitude": 73.415167,
+      "source": "Яндекс Карты — Богдана Хмельницкого, 283",
+      "source_url": "https://yandex.com/maps/66/omsk/house/ulitsa_bogdana_khmelnitskogo_283/Y0oYcgZlSEMAQFtufXV3cXlnZA%3D%3D/",
+      "coordinate_type": "Адресная точка территории; не центр производства",
+      "address": "Омск, ул. Богдана Хмельницкого, 283"
+    },
+    {
+      "id": "progress-omsk",
+      "name": "ФНПЦ «Прогресс»",
+      "industry": "Химическая промышленность",
+      "latitude": 54.958074,
+      "longitude": 73.44827,
+      "source": "Яндекс Карты — 5-я Кордная, 4",
+      "source_url": "https://yandex.ru/maps/66/omsk/house/5_ya_kordnaya_ulitsa_4/Y0oYcgNoS0IHQFtufXV0eXxkYA%3D%3D/inside/",
+      "coordinate_type": "Адресная точка предприятия; не центр производства",
+      "address": "Омск, ул. 5-я Кордная, 4"
+    }
+  ],
+  "pending_sources": [
+    {
+      "id": "omskshina",
+      "name": "Омскшина",
+      "industry": "Шинная промышленность",
+      "address": null,
+      "source": "Официальный сайт Омскшины",
+      "source_url": "https://www.omsktyre.ru/",
+      "verification_status": "Адрес Будеркина, 2 — общая шинная площадка с Кордиант-Восток; нужна независимая точка цехов Омскшины, иначе риск дублирования"
+    },
+    {
+      "id": "ozsm",
+      "name": "Омский завод смазочных материалов",
+      "industry": "Нефтепереработка",
+      "address": "Омск, проспект Губкина, 1",
+      "source": "Документация изготовителя",
+      "source_url": "https://gelios-2000.ru/files/08.pdf",
+      "verification_status": "Губкина, 1 соответствует административному зданию рядом с НПЗ; нет независимой подтвержденной точки производства масел"
     }
   ]
 }

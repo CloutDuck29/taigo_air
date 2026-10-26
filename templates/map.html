@@ -580,6 +580,24 @@ select:focus-visible {
 #map-save-button[hidden] {
   display: none !important;
 }
+
+    .industry-controls {
+  margin-top: 12px;
+}
+
+#industry-filter {
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 12px;
+  border-radius: 13px;
+  border: 1px solid var(--line);
+  background: #263842;
+  color: white;
+}
+
+#industry-show-more[hidden] {
+  display: none !important;
+}
 </style>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
@@ -777,8 +795,21 @@ select:focus-visible {
       Загружаем объекты...
     </p>
 
-    <div id="industry-table" class="industry-list"></div>
+<div class="industry-controls">
+  <select id="industry-filter" aria-label="Фильтр предприятий">
+    <option value="all">Все отрасли</option>
+  </select>
+</div>
 
+<div id="industry-table" class="industry-list"></div>
+
+<button
+  id="industry-show-more"
+  class="secondary full"
+  type="button"
+  hidden>
+  Показать ещё
+</button>
     <p class="note">
       Наличие предприятия рядом не означает подтверждённого
       загрязнения воздуха. Положение относительно ветра —
