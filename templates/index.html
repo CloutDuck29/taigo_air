@@ -900,6 +900,47 @@ body {
   min-height: 100dvh;
   background: transparent;
 }
+
+
+    /* Источники данных */
+
+.data-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: #ffca72;
+  line-height: 1.4;
+}
+
+.data-source::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.data-source.is-real {
+  color: #94d5b3;
+}
+
+.data-source.is-model {
+  color: #aebbd0;
+}
+
+.tile-source {
+  margin-top: 6px;
+}
+
+.source-note {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #ffca72;
+}
 </style>
 
 
@@ -944,7 +985,10 @@ body {
     <div class="window-info">
       <div>
         <h2>Окно в комнате</h2>
-
+<div class="data-source"
+     data-sensor-source>
+  Тестовые данные
+</div>
         <div class="subtext">
           Датчик:
           <strong id="window-sensor">—</strong>
@@ -981,10 +1025,10 @@ body {
       <div class="tile-value green"
            id="air-quality-label">—</div>
 
-      <div class="tile-footer">
-        <span>Общая оценка</span>
-        <span>↗</span>
-      </div>
+<div class="tile-footer">
+  <span>Модель Open-Meteo</span>
+  <span>↗</span>
+</div>
     </button>
 
     <button class="glass tile"
@@ -1003,8 +1047,8 @@ body {
       </div>
 
       <div class="tile-footer">
-        <span>Погода</span>
-        <span>↗</span>
+<span>Погода · Open-Meteo</span>
+          <span>↗</span>
       </div>
     </button>
 
@@ -1028,6 +1072,11 @@ body {
         <span id="co2-assessment">Проверка...</span>
         <span>↗</span>
       </div>
+        <div class="tile-source">
+  <span class="data-source" data-sensor-source>
+    Тестовые данные
+  </span>
+</div>
     </button>
 
     <button class="glass tile"
@@ -1050,6 +1099,11 @@ body {
         <span id="pm25-assessment">Проверка...</span>
         <span>↗</span>
       </div>
+        <div class="tile-source">
+  <span class="data-source" data-sensor-source>
+    Тестовые данные
+  </span>
+</div>
     </button>
 
   </div>
@@ -1077,6 +1131,11 @@ body {
        id="recommendation-reason">
       Анализируем показатели воздуха.
     </p>
+      <p class="source-note"
+   id="recommendation-source-note">
+  Расчёт использует тестовые показания
+  датчиков. Результат демонстрационный.
+</p>
 
     <a href="/forecast" class="action full">
       Подробный прогноз →
@@ -1144,6 +1203,9 @@ body {
       <h2>Управление окном</h2>
       <button class="close-modal" onclick="closeModal()">×</button>
     </div>
+      <p class="source-note" data-sensor-note>
+  Физический датчик окна пока не подключён.
+</p>
 
     <div class="detail-row">
       <span>Состояние датчика</span>
@@ -1191,7 +1253,9 @@ body {
     </div>
 
     <div class="detail-section">В помещении</div>
-
+<p class="source-note" data-sensor-note>
+  Показания внутренних датчиков тестовые.
+</p>
     <div class="detail-row">
       <span>CO₂</span>
       <strong><span id="air-co2">—</span> ppm</strong>
@@ -1280,7 +1344,10 @@ body {
     </div>
 
     <div class="detail-section">В помещении</div>
-
+<p class="source-note" data-sensor-note>
+  Температура, влажность и давление
+  в помещении пока симулируются.
+</p>
     <div class="detail-row">
       <span>Температура</span>
       <strong id="detail-temp-inside">—</strong>
@@ -1294,8 +1361,10 @@ body {
       <strong id="detail-pressure-inside">—</strong>
     </div>
 
-<div class="detail-section">Наружные датчики</div>
-
+<div class="detail-section"
+     id="outside-sensors-heading">
+  Наружные датчики · тестовые
+</div>
     <div class="detail-row">
       <span>Температура</span>
       <strong id="detail-temp-outside">—</strong>
@@ -1369,6 +1438,10 @@ body {
       <h2>Углекислый газ</h2>
       <button class="close-modal" onclick="closeModal()">×</button>
     </div>
+      <p class="source-note" data-sensor-note>
+  Тестовое значение CO₂, не реальное измерение.
+</p>
+
 
     <div style="font-size:54px;font-weight:700">
       <span id="detail-co2">—</span>
@@ -1398,7 +1471,9 @@ body {
       <h2>Мелкие частицы</h2>
       <button class="close-modal" onclick="closeModal()">×</button>
     </div>
-
+<p class="source-note" data-sensor-note>
+  Значения PM1, PM2.5 и PM10 симулируются.
+</p>
     <div class="detail-row">
       <span>PM1</span>
       <strong id="detail-pm1">—</strong>
@@ -1448,8 +1523,8 @@ body {
       <strong id="detail-device-window">—</strong>
     </div>
     <div class="detail-row">
-      <span>Последнее измерение</span>
-      <strong id="detail-updated">—</strong>
+<span>Последнее обновление данных</span>
+        <strong id="detail-updated">—</strong>
     </div>
 
     <p class="modal-note">
@@ -1655,18 +1730,54 @@ async function refreshSensors() {
     put("detail-pressure-outside",
       value(d.pressure_outside," мм рт. ст."));
 
-    const windowState=d.window_open
-      ? "Открыто" : "Закрыто";
+const windowState =
+  typeof d.window_open === "boolean"
+    ? (d.window_open ? "Открыто" : "Закрыто")
+    : "Нет данных";
 
     put("window-sensor",windowState);
     put("detail-window-sensor",windowState);
     put("detail-device-window",windowState);
 
-    put("detail-fan",
-      d.fan_on ? "Включён" : "Выключен");
+put(
+  "detail-fan",
+  typeof d.fan_on === "boolean"
+    ? (d.fan_on ? "Включён" : "Выключен")
+    : "Нет данных"
+);
 
-    const simulation=d.mode==="simulation";
+const simulation = d.mode !== "hardware";
 
+document.querySelectorAll(
+  "[data-sensor-source]"
+).forEach(element => {
+  element.textContent = simulation
+    ? "Тестовые данные"
+    : "Данные с датчика";
+
+  element.classList.toggle("is-real", !simulation);
+});
+
+document.querySelectorAll(
+  "[data-sensor-note]"
+).forEach(element => {
+  element.hidden = !simulation;
+});
+
+put(
+  "outside-sensors-heading",
+  simulation
+    ? "Наружные датчики · тестовые"
+    : "Наружные датчики"
+);
+
+const recommendationNote = $(
+  "recommendation-source-note"
+);
+
+if (recommendationNote) {
+  recommendationNote.hidden = !simulation;
+}
 const connection = simulation
   ? "Тестовый режим · симуляция"
   : "Режим физических датчиков";
@@ -1710,12 +1821,45 @@ $("device-dot").style.background =
 
     updateWindowWarning();
 
-  } catch(error) {
-    put("device-connection","Нет связи с сервером");
-    put("detail-connection","Ошибка подключения");
-    $("device-dot").style.background="#ff6868";
-    console.error("Sensors:",error);
-  }
+} catch(error) {
+  state.sensors = null;
+
+  put("device-connection", "Нет связи с сервером");
+  put("detail-connection", "Ошибка подключения");
+
+  const unavailable = [
+    "main-co2", "main-pm25",
+    "air-co2", "air-pm1",
+    "air-indoor-pm25", "air-indoor-pm10",
+    "detail-co2", "detail-pm1",
+    "detail-pm25", "detail-pm10",
+    "detail-temp-inside",
+    "detail-humidity-inside",
+    "detail-pressure-inside",
+    "detail-temp-outside",
+    "detail-humidity-outside",
+    "detail-pressure-outside",
+    "window-sensor",
+    "detail-window-sensor",
+    "detail-device-window",
+    "detail-fan",
+    "last-updated",
+    "detail-updated"
+  ];
+
+  unavailable.forEach(id => put(id, "—"));
+
+  put("co2-assessment", "Нет данных");
+  put("pm25-assessment", "Нет данных");
+  put("detail-co2-assessment", "Нет данных");
+  put("detail-warnings", "Данные датчиков недоступны");
+  put("window-warning", "Нет связи с датчиком");
+
+  const dot = $("device-dot");
+  if (dot) dot.style.background = "#ff6868";
+
+  console.error("Sensors:", error);
+}
 }
 
 /* Погода */
@@ -1758,7 +1902,7 @@ async function refreshWeather() {
   } catch (error) {
     put("weather-refresh-status",
       "Не удалось обновить погоду");
-
+put("outside-temperature", "—");
     console.error("Weather:", error);
   }
 }
@@ -1833,7 +1977,11 @@ function updateWindowWarning() {
   const mode=state.windowMode;
 
   if(!d || !mode) return;
-
+if (typeof d.window_open !== "boolean") {
+  put("window-warning",
+    "Состояние датчика окна неизвестно.");
+  return;
+}
   if(mode==="closed" && d.window_open) {
     put("window-warning",
       "Датчик показывает открытое окно, " +
