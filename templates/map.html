@@ -3,10 +3,12 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#10449a">
 <title>TaigoAir — Карта</title>
-
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
 
@@ -598,6 +600,44 @@ select:focus-visible {
 #industry-show-more[hidden] {
   display: none !important;
 }
+
+/* ===== МОБИЛЬНОЕ ПОВЕДЕНИЕ ===== */
+
+html,
+body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+button,
+a,
+.nav-link,
+.icon-button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+input,
+textarea {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
+/* Убираем масштабирование двойным нажатием */
+
+button,
+a {
+    touch-action: manipulation;
+}
+
+    input[type="number"]:focus,
+input[type="number"]:focus-visible {
+    outline: none;
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 2px rgba(255, 194, 71, 0.25);
+}
+
 </style>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
@@ -616,11 +656,6 @@ select:focus-visible {
       <i data-lucide="settings-2"></i>
     </a>
   </header>
-
-  <h1 class="page-title">Карта Омска</h1>
-  <p class="page-subtitle">
-    Расположение дома, направление окон и промышленные объекты поблизости.
-  </p>
 
   <!-- Карта Омска -->
   <section class="glass section map-frame">

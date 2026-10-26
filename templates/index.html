@@ -3,7 +3,8 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#10449a">
@@ -940,6 +941,43 @@ body {
   font-size: 12px;
   line-height: 1.5;
   color: #ffca72;
+}
+
+    /* ===== МОБИЛЬНОЕ ПОВЕДЕНИЕ ===== */
+
+html,
+body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+button,
+a,
+.nav-link,
+.icon-button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+input,
+textarea {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
+/* Убираем масштабирование двойным нажатием */
+
+button,
+a {
+    touch-action: manipulation;
+}
+
+    input[type="number"]:focus,
+input[type="number"]:focus-visible {
+    outline: none;
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 2px rgba(255, 194, 71, 0.25);
 }
 </style>
 

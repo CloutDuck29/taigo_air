@@ -502,6 +502,43 @@ a,
 button {
     -webkit-tap-highlight-color: transparent;
 }
+
+        /* ===== МОБИЛЬНОЕ ПОВЕДЕНИЕ ===== */
+
+html,
+body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+button,
+a,
+.nav-link,
+.icon-button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+input,
+textarea {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
+/* Убираем масштабирование двойным нажатием */
+
+button,
+a {
+    touch-action: manipulation;
+}
+
+        input[type="number"]:focus,
+input[type="number"]:focus-visible {
+    outline: none;
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 2px rgba(255, 194, 71, 0.25);
+}
 </style>
 </head>
 <body>
@@ -514,10 +551,6 @@ button {
         <div class="logo">TaigoAir</div>
         <a href="/settings" class="icon-button" aria-label="Настройки"><i data-lucide="settings-2"></i></a>
     </header>
-    <div class="history-heading">
-        <h1>История измерений</h1>
-        <p class="subtitle">Динамика качества воздуха в помещении</p>
-    </div>
 
     <section class="glass panel">
         <h2 class="section-title">Динамика показателей</h2>
