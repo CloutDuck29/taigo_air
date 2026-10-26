@@ -285,7 +285,7 @@ def simulation_api():
 
 @app.route("/history")
 def history():
-    measurements = get_measurements()
+    measurements = get_measurements(limit=5000)
     return render_template(
         "history.html",
         measurements=measurements

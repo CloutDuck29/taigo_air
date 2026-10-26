@@ -3,46 +3,1031 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#10449a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
     <title>TaigoAir — История</title>
+
+    <style>
+:root {
+    --yellow: #FFC247;
+    --green: #79D9A0;
+    --blue: #8BD8F5;
+    --white: #fff;
+    --muted: rgba(255,255,255,.76);
+    --glass: rgba(27,40,46,.58);
+    --radius: 29px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    background: #10449a;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    background: transparent;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--yellow);
+    outline-offset: 3px;
+}
+
+/* Фон: в точности как на главной */
+.background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: #10449a;
+}
+
+.background::before {
+    content: "";
+    position: absolute;
+    inset: -20px;
+    background-image: linear-gradient(180deg,rgba(10,23,38,.22) 0%,rgba(14,29,39,.17) 55%,rgba(12,23,18,.27) 100%),url("/static/images/landscape.jpg");
+    background-position: center top;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    filter: blur(5px);
+}
+
+.background::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 65px;
+    background: linear-gradient(to bottom,#10449a 0%,rgba(16,68,154,.75) 40%,rgba(16,68,154,0) 100%);
+}
+
+/* Прокручивается контент, а не body */
+.app {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
+    height: calc(100dvh - 132px - env(safe-area-inset-bottom));
+    min-height: 0;
+    margin: 0 auto;
+    padding: 8px 24px 20px;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to bottom,#000 0%,#000 calc(100% - 22px),transparent 100%);
+    mask-image: linear-gradient(to bottom,#000 0%,#000 calc(100% - 22px),transparent 100%);
+}
+
+.app::-webkit-scrollbar {
+    display: none;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 76px;
+    padding-top: calc(env(safe-area-inset-top) + 4px);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+
+.logo {
+    font-size: 34px;
+    font-weight: 750;
+    letter-spacing: -1.4px;
+}
+
+.icon-button {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(62,51,44,.44);
+    color: white;
+    display: grid;
+    place-items: center;
+}
+
+.icon-button svg {
+    width: 23px;
+    height: 23px;
+    stroke-width: 1.8;
+}
+
+.glass {
+    background: var(--glass);
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 32px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.history-heading {
+    margin: 5px 0 16px;
+    padding: 0 2px;
+}
+
+.history-heading h1 {
+    margin: 0 0 5px;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.subtitle {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--muted);
+}
+
+.panel {
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.section-title {
+    margin: 0 0 15px;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.tabs {
+    display: flex;
+    gap: 5px;
+    padding: 4px;
+    margin-bottom: 15px;
+    border-radius: 17px;
+    background: rgba(36,29,23,.45);
+    border: 1px solid rgba(255,255,255,.12);
+}
+
+.tab {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    border-radius: 13px;
+    min-height: 40px;
+    padding: 9px 3px;
+    color: rgba(255,255,255,.80);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tab.active {
+    color: #291c00;
+    background: var(--yellow);
+}
+
+.metric-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.metric-value {
+    margin-top: 7px;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -.5px;
+}
+
+.metric-unit {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+}
+
+.metric-count {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+}
+
+.chart-wrap {
+    position: relative;
+    height: 180px;
+    width: 100%;
+    border-radius: 19px;
+    overflow: hidden;
+    background: rgba(36,29,23,.35);
+    border: 1px solid rgba(255,255,255,.12);
+}
+
+#history-chart {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.chart-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 16px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.chart-axis {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 10px;
+    color: var(--muted);
+}
+
+.period-tabs {
+    margin: 14px 0 0;
+}
+
+.panel-description {
+    margin: -6px 0 14px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.measurement-list {
+    display: grid;
+    gap: 10px;
+}
+
+.measurement {
+    padding: 13px;
+    border-radius: 19px;
+    background: rgba(36,29,23,.37);
+    border: 1px solid rgba(255,255,255,.16);
+}
+
+.measurement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.measurement-date {
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.measurement-mode {
+    font-size: 11px;
+    color: var(--yellow);
+    text-align: right;
+}
+
+.measurement-values {
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 7px;
+}
+
+.measurement-value {
+    min-width: 0;
+}
+
+.measurement-value span {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10px;
+    color: var(--muted);
+}
+
+.measurement-value strong {
+    font-size: 13px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.measurement-footer {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(255,255,255,.13);
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.empty-state {
+    padding: 22px 10px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.show-more {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px;
+    border: 0;
+    border-radius: 17px;
+    color: white;
+    background: rgba(35,29,23,.68);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* Навигация — оригинальные параметры главной */
+.bottom-nav {
+    position: fixed;
+    left: 50%;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 448px;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    gap: 2px;
+    padding: 12px 8px;
+    border-radius: 28px;
+    background: rgba(27,40,46,.58);
+    border: 1px solid rgba(255,255,255,.22);
+    backdrop-filter: blur(30px) saturate(100%);
+    -webkit-backdrop-filter: blur(30px) saturate(100%);
+    box-shadow: 0 10px 32px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.10);
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.bottom-nav::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.10));
+}
+
+.nav-link {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: rgba(255,255,255,.85);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.nav-link svg {
+    width: 23px;
+    height: 23px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.nav-link.active {
+    color: #ffca39;
+    font-weight: 650;
+}
+
+/* Двусторонняя рулетка как на главной */
+.scroll-wheel-card {
+    --wheel-scale: 1;
+    --wheel-offset: 0px;
+    transform: translate3d(0,var(--wheel-offset),0) scale(var(--wheel-scale));
+    transform-origin: center center;
+    backface-visibility: hidden;
+    will-change: transform;
+}
+
+@media (max-width: 390px) {
+    .app {
+        padding-left: 17px;
+        padding-right: 17px;
+        padding-top: 6px;
+    }
+
+    .panel {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 350px) {
+    .app {
+        padding-left: 13px;
+        padding-right: 13px;
+    }
+
+    .tab {
+        font-size: 11px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-wheel-card {
+        transform: none !important;
+    }
+}
+
+
+.chart-wrap.is-empty {
+    height: 124px;
+}
+
+        /* Запрет выделения и системного меню по долгому нажатию */
+
+body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Оставляем выделение внутри полей ввода */
+
+input,
+textarea {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
+/* Убираем подсветку при нажатии */
+
+a,
+button {
+    -webkit-tap-highlight-color: transparent;
+}
+</style>
 </head>
 <body>
 
-<h1>История измерений</h1>
+<div class="background"></div>
 
-<p><a href="/">← На главную</a></p>
+<main class="app">
 
-{% if measurements %}
-<table border="1" cellpadding="8">
-    <thead>
-        <tr>
-            <th>Дата и время</th>
-            <th>Режим</th>
-            <th>CO₂</th>
-            <th>PM2.5</th>
-            <th>Температура</th>
-            <th>Окно</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for item in measurements %}
-        <tr>
-            <td>{{ item.timestamp }}</td>
-            <td>{{ item.mode }}</td>
-            <td>{{ item.co2 }} ppm</td>
-            <td>{{ item.pm25 }} мкг/м³</td>
-            <td>{{ item.temperature_inside }} °C</td>
-            <td>
-                {{ "Открыто" if item.window_open else "Закрыто" }}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>История пока пуста.</p>
-{% endif %}
+<header class="header">
+        <div class="logo">TaigoAir</div>
+        <a href="/settings" class="icon-button" aria-label="Настройки"><i data-lucide="settings-2"></i></a>
+    </header>
+    <div class="history-heading">
+        <h1>История измерений</h1>
+        <p class="subtitle">Динамика качества воздуха в помещении</p>
+    </div>
 
+    <section class="glass panel">
+        <h2 class="section-title">Динамика показателей</h2>
+
+        <div class="tabs" id="metric-tabs">
+            <button class="tab active" type="button" data-metric="co2">
+                CO₂
+            </button>
+            <button class="tab" type="button" data-metric="pm25">
+                PM2.5
+            </button>
+            <button class="tab" type="button" data-metric="temperature_inside">
+                Температура
+            </button>
+        </div>
+
+        <div class="metric-summary">
+            <div>
+                <div class="metric-label" id="metric-label">
+                    Последнее значение CO₂
+                </div>
+                <div class="metric-value">
+                    <span id="metric-value">—</span>
+                    <span class="metric-unit" id="metric-unit">ppm</span>
+                </div>
+            </div>
+            <div class="metric-count" id="metric-count"></div>
+        </div>
+
+        <div class="chart-wrap">
+            <svg
+                id="history-chart"
+                viewBox="0 0 340 210"
+                preserveAspectRatio="none"
+                role="img"
+                aria-label="График измерений"
+            ></svg>
+            <div id="chart-empty" class="chart-empty" hidden>
+                За выбранный период нет измерений
+            </div>
+        </div>
+
+        <div class="chart-axis">
+            <span id="chart-start">—</span>
+            <span id="chart-end">—</span>
+        </div>
+
+        <div class="tabs period-tabs" id="period-tabs">
+            <button class="tab" type="button" data-period="1h">
+                1 ч
+            </button>
+            <button class="tab active" type="button" data-period="24h">
+                24 ч
+            </button>
+            <button class="tab" type="button" data-period="7d">
+                7 дней
+            </button>
+            <button class="tab" type="button" data-period="all">
+                Всё
+            </button>
+        </div>
+    </section>
+
+    <section class="glass panel">
+        <h2 class="section-title">Журнал измерений</h2>
+
+        <p class="panel-description" id="journal-description">
+            Сохранённые записи за выбранный период
+        </p>
+
+        <div id="measurement-list" class="measurement-list"></div>
+
+        <button
+            id="history-show-more"
+            class="show-more"
+            type="button"
+            hidden
+        >
+            Показать ещё
+        </button>
+    </section>
+
+    <section class="glass panel">
+        <h2 class="section-title">О данных</h2>
+        <p class="panel-description" style="margin: 0">
+            История формируется из сохранённых записей.
+            Симулированные значения не являются показаниями
+            физических датчиков. Отсутствующие измерения
+            не заменяются вымышленными значениями.
+        </p>
+    </section>
+
+</main>
+
+<nav class="bottom-nav" aria-label="Основная навигация">
+    <a href="/" class="nav-link"><i data-lucide="house"></i><span>Главная</span></a>
+    <a href="/map" class="nav-link"><i data-lucide="map"></i><span>Карта</span></a>
+    <a href="/history" class="nav-link active" aria-current="page"><i data-lucide="history"></i><span>История</span></a>
+    <a href="/settings" class="nav-link"><i data-lucide="settings-2"></i><span>Настройки</span></a>
+</nav>
+
+<script id="history-data" type="application/json">
+{{ measurements | tojson }}
+</script>
+
+<script>
+    const measurements = JSON.parse(
+        document.getElementById("history-data").textContent
+    );
+
+    const metrics = {
+        co2: {
+            label: "Последнее значение CO₂",
+            unit: "ppm",
+            color: "#79D9A0"
+        },
+        pm25: {
+            label: "Последнее значение PM2.5",
+            unit: "мкг/м³",
+            color: "#FFC247"
+        },
+        temperature_inside: {
+            label: "Последняя температура",
+            unit: "°C",
+            color: "#8BD8F5"
+        }
+    };
+
+    let selectedMetric = "co2";
+    let selectedPeriod = "24h";
+    let visibleCount = 10;
+
+    const svgNS = "http://www.w3.org/2000/svg";
+
+    function parseDate(value) {
+        const date = new Date(value);
+        return Number.isFinite(date.getTime()) ? date : null;
+    }
+
+    function formatDate(value) {
+        const date = parseDate(value);
+
+        if (!date) return value ?? "Дата неизвестна";
+
+        return date.toLocaleString("ru-RU", {
+            day: "2-digit",
+            month: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+    }
+
+    function formatNumber(value, digits = 1) {
+        if (value === null || value === undefined || value === "") {
+            return "—";
+        }
+
+        const number = Number(value);
+
+        if (!Number.isFinite(number)) return "—";
+
+        return number.toLocaleString("ru-RU", {
+            maximumFractionDigits: digits
+        });
+    }
+
+    function getFilteredMeasurements() {
+        const durations = {
+            "1h": 60 * 60 * 1000,
+            "24h": 24 * 60 * 60 * 1000,
+            "7d": 7 * 24 * 60 * 60 * 1000
+        };
+
+        const now = Date.now();
+        const duration = durations[selectedPeriod];
+
+        return measurements
+            .filter(item => {
+                const date = parseDate(item.timestamp);
+
+                if (!date) return selectedPeriod === "all";
+
+                return !duration ||
+                    (date.getTime() >= now - duration &&
+                     date.getTime() <= now);
+            })
+            .sort((a, b) => {
+                const aTime = parseDate(a.timestamp)?.getTime() ?? 0;
+                const bTime = parseDate(b.timestamp)?.getTime() ?? 0;
+                return aTime - bTime;
+            });
+    }
+
+    function svgElement(name, attributes = {}) {
+        const element = document.createElementNS(svgNS, name);
+
+        Object.entries(attributes).forEach(([key, value]) => {
+            element.setAttribute(key, String(value));
+        });
+
+        return element;
+    }
+
+    function renderChart(items) {
+        const chart = document.getElementById("history-chart");
+        const empty = document.getElementById("chart-empty");
+        const metric = metrics[selectedMetric];
+
+        chart.replaceChildren();
+
+const rawPoints = items
+    .filter(item =>
+        item[selectedMetric] !== null &&
+        item[selectedMetric] !== undefined &&
+        item[selectedMetric] !== "" &&
+        Number.isFinite(Number(item[selectedMetric])) &&
+        parseDate(item.timestamp)
+    )
+    .map(item => ({
+        time: parseDate(item.timestamp).getTime(),
+        value: Number(item[selectedMetric])
+    }));
+
+// Для одной секунды оставляем последнее сохранённое значение
+const pointsByTime = new Map();
+
+rawPoints.forEach(point => {
+    pointsByTime.set(point.time, point);
+});
+
+const points = [...pointsByTime.values()]
+    .sort((a, b) => a.time - b.time);
+
+        const latest = points.at(-1);
+
+        document.getElementById("metric-label").textContent =
+            metric.label;
+
+        document.getElementById("metric-unit").textContent =
+            metric.unit;
+
+        document.getElementById("metric-value").textContent =
+            latest ? formatNumber(latest.value) : "—";
+
+        document.getElementById("metric-count").textContent =
+            `${points.length} измерений`;
+
+        document.getElementById("chart-start").textContent =
+            points.length
+                ? formatDate(new Date(points[0].time).toISOString())
+                : "—";
+
+        document.getElementById("chart-end").textContent =
+            points.length
+                ? formatDate(new Date(points.at(-1).time).toISOString())
+                : "—";
+
+        chart.parentElement.classList.toggle("is-empty", !points.length);
+
+        if (!points.length) {
+            empty.hidden = false;
+            return;
+        }
+
+        empty.hidden = true;
+
+        const width = 340;
+        const height = 210;
+        const left = 14;
+        const right = 14;
+        const top = 18;
+        const bottom = 25;
+
+        const values = points.map(point => point.value);
+
+        let min = Math.min(...values);
+        let max = Math.max(...values);
+
+        const padding = Math.max((max - min) * 0.12, 0.5);
+
+        min -= padding;
+        max += padding;
+
+        const minTime = points[0].time;
+        const maxTime = points.at(-1).time;
+
+        function getX(time, index) {
+            if (minTime === maxTime) {
+                return width / 2;
+            }
+
+            return left +
+                ((time - minTime) / (maxTime - minTime)) *
+                (width - left - right);
+        }
+
+        function getY(value) {
+            return top +
+                (1 - (value - min) / (max - min)) *
+                (height - top - bottom);
+        }
+
+        for (let i = 0; i < 4; i++) {
+            const y = top +
+                i * (height - top - bottom) / 3;
+
+            chart.appendChild(svgElement("line", {
+                x1: left,
+                y1: y,
+                x2: width - right,
+                y2: y,
+                stroke: "rgba(255,255,255,.12)",
+                "stroke-width": 1
+            }));
+        }
+
+        const path = points.map((point, index) => {
+            const x = getX(point.time, index);
+            const y = getY(point.value);
+            return `${index === 0 ? "M" : "L"} ${x} ${y}`;
+        }).join(" ");
+
+        if (points.length > 1) {
+            chart.appendChild(svgElement("path", {
+                d: path,
+                fill: "none",
+                stroke: metric.color,
+                "stroke-width": 2.5,
+                "stroke-linecap": "round",
+                "stroke-linejoin": "round",
+                "vector-effect": "non-scaling-stroke"
+            }));
+        }
+
+        if (points.length === 1) {
+            chart.appendChild(svgElement("circle", {
+                cx: getX(points[0].time, 0),
+                cy: getY(points[0].value),
+                r: 4,
+                fill: metric.color
+            }));
+        }
+    }
+
+    function createValue(label, value, unit) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "measurement-value";
+
+        const name = document.createElement("span");
+        name.textContent = label;
+
+        const number = document.createElement("strong");
+        const formatted = formatNumber(value);
+
+        number.textContent = formatted === "—"
+            ? "—"
+            : `${formatted} ${unit}`;
+
+        wrapper.append(name, number);
+        return wrapper;
+    }
+
+    function renderJournal(items) {
+        const list = document.getElementById("measurement-list");
+        const showMore = document.getElementById("history-show-more");
+
+        list.replaceChildren();
+
+        const newestFirst = [...items].reverse();
+
+        if (!newestFirst.length) {
+            const empty = document.createElement("div");
+            empty.className = "empty-state";
+            empty.textContent =
+                "За выбранный период сохранённых измерений нет.";
+            list.appendChild(empty);
+        }
+
+        newestFirst.slice(0, visibleCount).forEach(item => {
+            const card = document.createElement("div");
+            card.className = "measurement";
+
+            const header = document.createElement("div");
+            header.className = "measurement-header";
+
+            const date = document.createElement("div");
+            date.className = "measurement-date";
+            date.textContent = formatDate(item.timestamp);
+
+            const mode = document.createElement("div");
+            mode.className = "measurement-mode";
+            const sourceMode = String(item.mode ?? "").toLowerCase();
+
+            mode.textContent = sourceMode.includes("sim")
+                || sourceMode.includes("test")
+                ? "Симуляция"
+                : sourceMode
+                    ? `Режим: ${item.mode}`
+                    : "Источник не указан";
+
+            header.append(date, mode);
+
+            const values = document.createElement("div");
+            values.className = "measurement-values";
+
+            values.append(
+                createValue("CO₂", item.co2, "ppm"),
+                createValue("PM2.5", item.pm25, "мкг/м³"),
+                createValue("Температура", item.temperature_inside, "°C")
+            );
+
+            const footer = document.createElement("div");
+            footer.className = "measurement-footer";
+
+            footer.textContent =
+                item.window_open === null ||
+                item.window_open === undefined
+                    ? "Окно: нет данных"
+                    : Number(item.window_open) === 1
+                        ? "Окно: открыто"
+                        : "Окно: закрыто";
+
+            card.append(header, values, footer);
+            list.appendChild(card);
+        });
+
+        showMore.hidden = newestFirst.length <= visibleCount;
+
+        document.getElementById("journal-description").textContent =
+            `Записей за период: ${items.length}`;
+    }
+
+    function renderHistory() {
+        const items = getFilteredMeasurements();
+
+        renderChart(items);
+        renderJournal(items);
+    }
+
+    document.querySelectorAll("[data-metric]").forEach(button => {
+        button.addEventListener("click", () => {
+            selectedMetric = button.dataset.metric;
+
+            document.querySelectorAll("[data-metric]")
+                .forEach(tab => tab.classList.toggle(
+                    "active",
+                    tab === button
+                ));
+
+            renderHistory();
+        });
+    });
+
+    document.querySelectorAll("[data-period]").forEach(button => {
+        button.addEventListener("click", () => {
+            selectedPeriod = button.dataset.period;
+            visibleCount = 10;
+
+            document.querySelectorAll("[data-period]")
+                .forEach(tab => tab.classList.toggle(
+                    "active",
+                    tab === button
+                ));
+
+            renderHistory();
+        });
+    });
+
+    document.getElementById("history-show-more")
+        .addEventListener("click", () => {
+            visibleCount += 10;
+            renderHistory();
+        });
+
+    renderHistory();
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  if (window.lucide) lucide.createIcons({attrs:{"stroke-width":1.8}});
+  const scroller = document.querySelector(".app");
+  if (!scroller || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const cards = [...scroller.querySelectorAll(".panel")];
+  cards.forEach(card => card.classList.add("scroll-wheel-card"));
+  let ticking = false;
+  function update() {
+    const view = scroller.getBoundingClientRect();
+    const atBottom = scroller.scrollTop >= scroller.scrollHeight - scroller.clientHeight - 8;
+    cards.forEach(card => {
+      const rect = card.getBoundingClientRect();
+      const oldOffset = parseFloat(card.style.getPropertyValue("--wheel-offset")) || 0;
+      const oldScale = parseFloat(card.style.getPropertyValue("--wheel-scale")) || 1;
+      const baseHeight = rect.height / oldScale;
+      const baseTop = rect.top - oldOffset - baseHeight * (1 - oldScale) / 2;
+      const baseBottom = baseTop + baseHeight;
+      const entering = Math.max(0, baseTop - (view.bottom - 200));
+      const leaving = Math.max(0, (view.top + 100) - baseBottom);
+      const distance = Math.max(entering, leaving);
+      const progress = card === cards[cards.length - 1] && atBottom ? 0 : Math.min(1, distance / 160);
+      card.style.setProperty("--wheel-scale", (1 - progress * .10).toFixed(4));
+      card.style.setProperty("--wheel-offset", `${(progress * (entering > leaving ? 18 : -18)).toFixed(1)}px`);
+    });
+    ticking = false;
+  }
+  function schedule() { if (!ticking) { ticking = true; requestAnimationFrame(update); } }
+  scroller.addEventListener("scroll", schedule, {passive:true});
+  window.addEventListener("resize", schedule);
+  update();
+});
+</script>
 </body>
 </html>
