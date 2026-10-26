@@ -1,0 +1,530 @@
+:root {
+    --yellow: #FFC247;
+    --green: #79D9A0;
+    --blue: #8BD8F5;
+    --white: #fff;
+    --muted: rgba(255,255,255,.76);
+    --glass: rgba(27,40,46,.58);
+    --radius: 29px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    background: #10449a;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+    background: transparent;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--yellow);
+    outline-offset: 3px;
+}
+
+/* Фон: в точности как на главной */
+.background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: #10449a;
+}
+
+.background::before {
+    content: "";
+    position: absolute;
+    inset: -20px;
+    background-image: linear-gradient(180deg,rgba(10,23,38,.22) 0%,rgba(14,29,39,.17) 55%,rgba(12,23,18,.27) 100%),url("/static/images/landscape.jpg");
+    background-position: center top;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    filter: blur(5px);
+}
+
+.background::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 65px;
+    background: linear-gradient(to bottom,#10449a 0%,rgba(16,68,154,.75) 40%,rgba(16,68,154,0) 100%);
+}
+
+/* Прокручивается контент, а не body */
+.app {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
+    height: calc(100dvh - 132px - env(safe-area-inset-bottom));
+    min-height: 0;
+    margin: 0 auto;
+    padding: 8px 24px 20px;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to bottom,#000 0%,#000 calc(100% - 22px),transparent 100%);
+    mask-image: linear-gradient(to bottom,#000 0%,#000 calc(100% - 22px),transparent 100%);
+}
+
+.app::-webkit-scrollbar {
+    display: none;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 76px;
+    padding-top: calc(env(safe-area-inset-top) + 4px);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+
+.logo {
+    font-size: 34px;
+    font-weight: 750;
+    letter-spacing: -1.4px;
+}
+
+.icon-button {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(62,51,44,.44);
+    color: white;
+    display: grid;
+    place-items: center;
+}
+
+.icon-button svg {
+    width: 23px;
+    height: 23px;
+    stroke-width: 1.8;
+}
+
+.glass {
+    background: var(--glass);
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: var(--radius);
+    box-shadow: 0 10px 32px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.history-heading {
+    margin: 5px 0 16px;
+    padding: 0 2px;
+}
+
+.history-heading h1 {
+    margin: 0 0 5px;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.subtitle {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--muted);
+}
+
+.panel {
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.section-title {
+    margin: 0 0 15px;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.tabs {
+    display: flex;
+    gap: 5px;
+    padding: 4px;
+    margin-bottom: 15px;
+    border-radius: 17px;
+    background: rgba(36,29,23,.45);
+    border: 1px solid rgba(255,255,255,.12);
+}
+
+.tab {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    border-radius: 13px;
+    min-height: 40px;
+    padding: 9px 3px;
+    color: rgba(255,255,255,.80);
+    background: transparent;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.tab.active {
+    color: #291c00;
+    background: var(--yellow);
+}
+
+.metric-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.metric-label {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.metric-value {
+    margin-top: 7px;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: -.5px;
+}
+
+.metric-unit {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+}
+
+.metric-count {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+}
+
+.chart-wrap {
+    position: relative;
+    height: 180px;
+    width: 100%;
+    border-radius: 19px;
+    overflow: hidden;
+    background: rgba(36,29,23,.35);
+    border: 1px solid rgba(255,255,255,.12);
+}
+
+#history-chart {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.chart-empty {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 16px;
+    font-size: 13px;
+    color: var(--muted);
+}
+
+.chart-axis {
+    margin-top: 8px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 10px;
+    color: var(--muted);
+}
+
+.period-tabs {
+    margin: 14px 0 0;
+}
+
+.panel-description {
+    margin: -6px 0 14px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.measurement-list {
+    display: grid;
+    gap: 10px;
+}
+
+.measurement {
+    padding: 13px;
+    border-radius: 19px;
+    background: rgba(36,29,23,.37);
+    border: 1px solid rgba(255,255,255,.16);
+}
+
+.measurement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.measurement-date {
+    font-size: 12px;
+    font-weight: 650;
+}
+
+.measurement-mode {
+    font-size: 11px;
+    color: var(--yellow);
+    text-align: right;
+}
+
+.measurement-values {
+    display: grid;
+    grid-template-columns: repeat(3,minmax(0,1fr));
+    gap: 7px;
+}
+
+.measurement-value {
+    min-width: 0;
+}
+
+.measurement-value span {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 10px;
+    color: var(--muted);
+}
+
+.measurement-value strong {
+    font-size: 13px;
+    font-weight: 650;
+    overflow-wrap: anywhere;
+}
+
+.measurement-footer {
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px solid rgba(255,255,255,.13);
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.empty-state {
+    padding: 22px 10px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.show-more {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px;
+    border: 0;
+    border-radius: 17px;
+    color: white;
+    background: rgba(35,29,23,.68);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+/* Навигация — оригинальные параметры главной */
+.bottom-nav {
+    position: fixed;
+    left: 50%;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 448px;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(4,minmax(0,1fr));
+    gap: 2px;
+    padding: 12px 8px;
+    border-radius: 28px;
+    background: rgba(27,40,46,.58);
+    border: 1px solid rgba(255,255,255,.22);
+    backdrop-filter: blur(30px) saturate(100%);
+    -webkit-backdrop-filter: blur(30px) saturate(100%);
+    box-shadow: 0 10px 32px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.10);
+    isolation: isolate;
+    overflow: hidden;
+}
+
+.bottom-nav::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    z-index: -1;
+    pointer-events: none;
+    background: linear-gradient(180deg,rgba(255,255,255,.06),rgba(0,0,0,.10));
+}
+
+.nav-link {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: rgba(255,255,255,.85);
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.nav-link svg {
+    width: 23px;
+    height: 23px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.nav-link.active {
+    color: #ffca39;
+    font-weight: 650;
+}
+
+/* Двусторонняя рулетка как на главной */
+.scroll-wheel-card {
+    --wheel-scale: 1;
+    --wheel-offset: 0px;
+    transform: translate3d(0,var(--wheel-offset),0) scale(var(--wheel-scale));
+    transform-origin: center center;
+    backface-visibility: hidden;
+    will-change: transform;
+}
+
+@media (max-width: 390px) {
+    .app {
+        padding-left: 17px;
+        padding-right: 17px;
+        padding-top: 6px;
+    }
+
+    .panel {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 350px) {
+    .app {
+        padding-left: 13px;
+        padding-right: 13px;
+    }
+
+    .tab {
+        font-size: 11px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-wheel-card {
+        transform: none !important;
+    }
+}
+
+
+.chart-wrap.is-empty {
+    height: 124px;
+}
+
+        /* Запрет выделения и системного меню по долгому нажатию */
+
+body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+/* Оставляем выделение внутри полей ввода */
+
+input,
+textarea {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
+/* Убираем подсветку при нажатии */
+
+a,
+button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+        /* ===== МОБИЛЬНОЕ ПОВЕДЕНИЕ ===== */
+
+html,
+body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+button,
+a,
+.nav-link,
+.icon-button {
+    -webkit-tap-highlight-color: transparent;
+}
+
+input,
+textarea {
+    -webkit-user-select: text;
+    user-select: text;
+    -webkit-touch-callout: default;
+}
+
+/* Убираем масштабирование двойным нажатием */
+
+button,
+a {
+    touch-action: manipulation;
+}
+
+        input[type="number"]:focus,
+input[type="number"]:focus-visible {
+    outline: none;
+    border-color: var(--yellow);
+    box-shadow: 0 0 0 2px rgba(255, 194, 71, 0.25);
+}
+.panel-description-flush {
+  margin: 0;
+}

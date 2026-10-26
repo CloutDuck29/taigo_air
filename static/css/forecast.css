@@ -1,0 +1,738 @@
+
+        :root {
+            --yellow: #ffc247;
+            --green: #79d9a0;
+            --blue: #8bd8f5;
+            --muted: rgba(255, 255, 255, 0.76);
+            --glass: rgba(27, 40, 46, 0.58);
+            --radius: 29px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            min-height: 100%;
+            background: #10449a;
+        }
+
+        body {
+            margin: 0;
+            height: 100dvh;
+            overflow: hidden;
+            color: white;
+            background: transparent;
+            font-family: -apple-system, BlinkMacSystemFont,
+                         "SF Pro Display", "Segoe UI", sans-serif;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        a,
+        button {
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html,
+        body {
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        input {
+            -webkit-user-select: text;
+            user-select: text;
+            -webkit-touch-callout: default;
+        }
+
+        a:focus-visible,
+        button:focus-visible,
+        summary:focus-visible {
+            outline: 2px solid var(--yellow);
+            outline-offset: 3px;
+        }
+
+        /* =========================
+           ФОН
+        ========================= */
+
+        .background {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            background: #10449a;
+        }
+
+        .background::before {
+            content: "";
+            position: absolute;
+            inset: -20px;
+
+            background-image:
+                linear-gradient(
+                    180deg,
+                    rgba(10, 23, 38, 0.22) 0%,
+                    rgba(14, 29, 39, 0.17) 55%,
+                    rgba(12, 23, 18, 0.27) 100%
+                ),
+                url("/static/images/landscape.jpg");
+
+            background-position: center top;
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            filter: blur(5px);
+        }
+
+        .background::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 65px;
+
+            background: linear-gradient(
+                to bottom,
+                #10449a 0%,
+                rgba(16, 68, 154, 0.75) 40%,
+                transparent 100%
+            );
+        }
+
+        /* =========================
+           ОБЩАЯ СТРАНИЦА
+        ========================= */
+
+        .app {
+            position: relative;
+            z-index: 1;
+
+            width: 100%;
+            max-width: 480px;
+            height: calc(100dvh - 132px - env(safe-area-inset-bottom));
+            min-height: 0;
+
+            margin: 0 auto;
+            padding: 8px 24px 28px;
+
+            overflow-y: auto;
+            overscroll-behavior-y: contain;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            scroll-padding-bottom: 110px;
+
+            -webkit-mask-image: linear-gradient(
+                to bottom,
+                #000 0%,
+                #000 calc(100% - 22px),
+                transparent 100%
+            );
+
+            mask-image: linear-gradient(
+                to bottom,
+                #000 0%,
+                #000 calc(100% - 22px),
+                transparent 100%
+            );
+        }
+
+        .app::-webkit-scrollbar {
+            display: none;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            min-height: 76px;
+            padding-top: calc(env(safe-area-inset-top) + 4px);
+            padding-bottom: 8px;
+            margin-bottom: 8px;
+        }
+
+        .logo {
+            font-size: 34px;
+            font-weight: 750;
+            letter-spacing: -1.4px;
+        }
+
+        .icon-button {
+            display: grid;
+            place-items: center;
+
+            width: 48px;
+            height: 48px;
+
+            border: none;
+            border-radius: 50%;
+            background: rgba(62, 51, 44, 0.44);
+        }
+
+        .icon-button svg {
+            width: 23px;
+            height: 23px;
+            stroke-width: 1.8;
+        }
+
+        /* =========================
+           СТЕКЛЯННЫЕ КАРТОЧКИ
+        ========================= */
+
+        .glass {
+            background: var(--glass);
+
+            backdrop-filter: blur(30px) saturate(140%);
+            -webkit-backdrop-filter: blur(30px) saturate(140%);
+
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: var(--radius);
+
+            box-shadow:
+                0 10px 32px rgba(0, 0, 0, 0.20),
+                inset 0 1px 0 rgba(255, 255, 255, 0.10);
+        }
+
+        .panel {
+            padding: 18px;
+            margin-bottom: 14px;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            margin: 0 0 12px;
+
+            font-size: 17px;
+            line-height: 1.35;
+            font-weight: 700;
+        }
+
+        .panel-title svg {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+            stroke: var(--yellow);
+        }
+
+        .section-copy {
+            margin: 0 0 12px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: var(--muted);
+        }
+
+        .status-line {
+            margin: 10px 0 12px;
+            padding: 10px 12px;
+
+            border-radius: 14px;
+            background: rgba(14, 29, 37, 0.35);
+
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .summary-note {
+            margin: 12px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .note {
+            margin: 0;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* =========================
+           КАРТОЧКИ РЕЗУЛЬТАТОВ
+        ========================= */
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin: 10px 0;
+        }
+
+        .detail-box {
+            min-width: 0;
+            padding: 12px;
+
+            border: 1px solid rgba(255, 255, 255, 0.11);
+            border-radius: 17px;
+            background: rgba(12, 29, 38, 0.37);
+        }
+
+        .detail-label {
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: 11px;
+            line-height: 1.45;
+        }
+
+        .detail-value {
+            font-size: 16px;
+            font-weight: 750;
+            line-height: 1.35;
+
+            overflow-wrap: break-word;
+            word-break: normal;
+            hyphens: auto;
+        }
+
+        /* Длинное автоматическое решение */
+
+        #scenario-decision {
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        #scenario-time {
+            font-size: 16px;
+        }
+
+        /* Не разрываем значения */
+
+        #room-volume,
+        #air-flow {
+            display: inline;
+        }
+
+        .mini-meta {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .mini-meta > div {
+            min-width: 0;
+            padding: 12px;
+
+            border-radius: 14px;
+            background: rgba(12, 29, 38, 0.35);
+        }
+
+        .mini-meta-label {
+            display: block;
+            margin-bottom: 7px;
+
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .mini-meta-value {
+            display: flex;
+            flex-wrap: nowrap;
+            align-items: baseline;
+            gap: 5px;
+
+            font-size: 17px;
+            font-weight: 750;
+            white-space: nowrap;
+        }
+
+        .mini-unit {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        /* =========================
+           ПОЛЕ РУЧНОГО РАСЧЁТА
+        ========================= */
+
+        .field {
+            display: block;
+            margin: 14px 0;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 8px;
+
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setting-input {
+            width: 100%;
+            min-width: 0;
+            min-height: 45px;
+            padding: 10px 13px;
+
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 14px;
+
+            color: white;
+            background: rgba(15, 29, 35, 0.48);
+
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .setting-input:focus {
+            outline: none;
+            border-color: var(--yellow);
+            box-shadow: 0 0 0 2px rgba(255, 194, 71, 0.18);
+        }
+
+        .unit {
+            flex-shrink: 0;
+            min-width: 58px;
+
+            color: var(--muted);
+            font-size: 12px;
+            text-align: right;
+        }
+
+        .save-button {
+            width: 100%;
+            min-height: 46px;
+
+            border: none;
+            border-radius: 17px;
+
+            background: var(--yellow);
+            color: #291c00;
+
+            font-size: 13px;
+            font-weight: 750;
+        }
+
+        .save-button:active {
+            transform: scale(0.98);
+        }
+
+        /* =========================
+           РАСКРЫВАЮЩИЕСЯ РАЗДЕЛЫ
+        ========================= */
+
+        .disclosure {
+            margin-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        .disclosure > summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+
+            padding: 14px 1px 4px;
+
+            color: white;
+            font-size: 13px;
+            font-weight: 650;
+
+            cursor: pointer;
+            list-style: none;
+            touch-action: manipulation;
+        }
+
+        .disclosure > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .disclosure > summary::after {
+            content: "⌄";
+
+            color: var(--yellow);
+            font-size: 20px;
+            line-height: 1;
+
+            transition: transform 0.2s ease;
+        }
+
+        .disclosure[open] > summary::after {
+            transform: rotate(180deg);
+        }
+
+        .disclosure-body {
+            padding-top: 12px;
+        }
+
+        .disclosure .table-scroll {
+            max-height: 360px;
+            overflow: auto;
+        }
+
+        /* =========================
+           ТАБЛИЦЫ
+        ========================= */
+
+        .table-scroll {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+
+            border: 1px solid rgba(255, 255, 255, 0.13);
+            border-radius: 17px;
+
+            background: rgba(13, 29, 37, 0.28);
+
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .forecast-table {
+            width: 100%;
+            min-width: 680px;
+
+            border-collapse: collapse;
+            font-size: 12px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .forecast-table th,
+        .forecast-table td {
+            padding: 13px 12px;
+            text-align: left;
+            white-space: nowrap;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .forecast-table th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 650;
+
+            background: rgba(9, 25, 36, 0.92);
+        }
+
+        .forecast-table tbody tr:last-child td {
+            border-bottom: 0;
+        }
+
+        .forecast-table tbody tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.035);
+        }
+
+        .scroll-hint {
+            margin: 8px 1px 12px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .warning-list {
+            margin: 8px 0 0;
+            padding-left: 19px;
+
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .warning-list li + li {
+            margin-top: 5px;
+        }
+
+        /* =========================
+           ДОПОЛНИТЕЛЬНО
+        ========================= */
+
+        .link-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+
+            margin-top: 12px;
+            padding: 13px 15px;
+
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            border-radius: 16px;
+
+            background: rgba(20, 38, 43, 0.35);
+
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .link-row svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            color: var(--yellow);
+        }
+
+        .compact-disclosure {
+            margin-top: 0;
+            border-top: 0;
+        }
+
+        /* =========================
+           НИЖНЯЯ НАВИГАЦИЯ
+        ========================= */
+
+        .bottom-nav {
+            position: fixed;
+            left: 50%;
+            bottom: calc(12px + env(safe-area-inset-bottom));
+            transform: translateX(-50%);
+
+            width: calc(100% - 32px);
+            max-width: 448px;
+
+            z-index: 30;
+
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 2px;
+            padding: 12px 8px;
+
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 28px;
+
+            background: rgba(27, 40, 46, 0.58);
+
+            backdrop-filter: blur(30px) saturate(100%);
+            -webkit-backdrop-filter: blur(30px) saturate(100%);
+
+            box-shadow:
+                0 10px 32px rgba(0, 0, 0, 0.20),
+                inset 0 1px 0 rgba(255, 255, 255, 0.10);
+
+            isolation: isolate;
+            overflow: hidden;
+        }
+
+        .bottom-nav::before {
+            content: "";
+
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+
+            border-radius: inherit;
+            pointer-events: none;
+
+            background: linear-gradient(
+                180deg,
+                rgba(255, 255, 255, 0.06),
+                rgba(0, 0, 0, 0.10)
+            );
+        }
+
+        .nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+
+            min-width: 0;
+
+            color: rgba(255, 255, 255, 0.85);
+
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .nav-link svg {
+            width: 23px;
+            height: 23px;
+
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .nav-link.active {
+            color: #ffca39;
+            font-weight: 650;
+        }
+
+        /* =========================
+           АНИМАЦИЯ КАРТОЧЕК
+        ========================= */
+
+        .scroll-wheel-card {
+            --wheel-scale: 1;
+            --wheel-offset: 0px;
+
+            transform:
+                translate3d(0, var(--wheel-offset), 0)
+                scale(var(--wheel-scale));
+
+            transform-origin: center center;
+            backface-visibility: hidden;
+            will-change: transform;
+        }
+
+        /* =========================
+           АДАПТИВНОСТЬ
+        ========================= */
+
+        @media (max-width: 390px) {
+            .app {
+                padding-left: 17px;
+                padding-right: 17px;
+                padding-top: 6px;
+            }
+
+            .panel {
+                padding: 16px;
+            }
+
+            .detail-value {
+                font-size: 15px;
+            }
+
+            #scenario-decision {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 350px) {
+            .app {
+                padding-left: 13px;
+                padding-right: 13px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .scroll-wheel-card {
+                transform: none !important;
+            }
+        }
+.forecast-spaced {
+  margin-top: 12px;
+}
