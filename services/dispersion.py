@@ -53,8 +53,14 @@ def calculate_plume(
         "source_id": source["id"],
         "source_name": source["name"],
         "distance_km": source["distance_km"],
+
         "downwind_m": round(x, 1),
         "crosswind_m": round(y, 1),
+
+        "plume_width_m": None,
+        "crosswind_sigma": None,
+        "within_plume": None,
+
         "scenario": "Учебная модель, не реальный выброс",
         "concentration_ug_m3": 0.0
     }
@@ -76,9 +82,29 @@ def calculate_plume(
     sigma_y = (
         0.08 * x / math.sqrt(1 + 0.0001 * x)
     )
+
     sigma_z = (
-        0.06 * x / math.sqrt(1 + 0.0015 * x)
+            0.06 * x / math.sqrt(1 + 0.0015 * x)
     )
+
+    # Условная ширина основной области шлейфа:
+    # две стандартные поперечные дисперсии
+    plume_half_width = 2 * sigma_y
+
+    # Насколько далеко дом от оси шлейфа
+    crosswind_sigma = abs(y) / sigma_y
+
+    result["plume_width_m"] = round(
+        plume_half_width * 2, 1
+    )
+    result["crosswind_sigma"] = round(
+        crosswind_sigma, 2
+    )
+    result["within_plume"] = (
+            crosswind_sigma <= 2
+    )
+
+    # Стационарная гауссова модель
 
     # Стационарная гауссова модель
     concentration_g_m3 = (

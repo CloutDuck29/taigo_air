@@ -1,0 +1,63 @@
+
+{
+  "omsk-refinery": {
+    "substances": "Бензол · NO₂ · SO₂ · фенол · пыль",
+    "verified": true
+  },
+  "omsky-kauchuk": {
+    "substances": "NO₂ · SO₂ · CO · бензол · бутадиен · стирол · фенол · пыль",
+    "verified": true
+  },
+  "omsk-chp-5": {
+    "substances": "NOₓ · CO · зола · SOₓ",
+    "verified": false
+  },
+  "omsk-chp-3": {
+    "substances": "NO₂ · SO₂ · CO · пыль · формальдегид",
+    "verified": true
+  },
+  "omsk-chp-4": {
+    "substances": "Зола · NOₓ · SOₓ · CO",
+    "verified": false
+  },
+  "omsk-carbon": {
+    "substances": "Пыль техуглерода · CO · SO₂ · NOₓ · органические соединения",
+    "verified": false
+  },
+  "omsktransmash": {
+    "substances": "Сварочные аэрозоли · оксиды металлов · растворители · пыль",
+    "verified": false
+  },
+  "po-polyot": {
+    "substances": "Сварочные аэрозоли · металлическая пыль · растворители",
+    "verified": false
+  },
+  "omsk-chp-2": {
+    "substances": "NO₂ · взвешенные вещества",
+    "verified": true
+  },
+  "poliom": {
+    "substances": "Углеводороды · летучие органические соединения",
+    "verified": false
+  },
+  "cordiant-omsk": {
+    "substances": "Марганец · серная кислота · фториды · бензол · этилбензол",
+    "verified": true
+  },
+  "omo-baranova": {
+    "substances": "Сварочные аэрозоли · металлическая пыль · растворители · NOₓ",
+    "verified": false
+  },
+  "progress-omsk": {
+    "substances": "Органические растворители · летучие органические соединения · пыль",
+    "verified": false
+  },
+  "omskshina": {
+    "substances": "Резиновая пыль · органические соединения · растворители",
+    "verified": false
+  },
+  "ozsm": {
+    "substances": "Углеводороды · масляный аэрозоль · летучие органические соединения",
+    "verified": false
+  }
+}

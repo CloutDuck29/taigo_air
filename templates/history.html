@@ -39,7 +39,10 @@
                 PM2.5
             </button>
             <button class="tab" type="button" data-metric="temperature_inside">
-                Температура
+                Темп.
+            </button>
+            <button class="tab" type="button" data-metric="humidity_inside">
+                Влажность
             </button>
         </div>
 
@@ -54,6 +57,12 @@
                 </div>
             </div>
             <div class="metric-count" id="metric-count"></div>
+        </div>
+
+        <div class="history-stats" aria-label="Статистика за период">
+            <div class="history-stat"><span>Минимум</span><strong id="metric-min">—</strong></div>
+            <div class="history-stat"><span>Среднее</span><strong id="metric-average">—</strong></div>
+            <div class="history-stat"><span>Максимум</span><strong id="metric-max">—</strong></div>
         </div>
 
         <div class="chart-wrap">
@@ -151,6 +160,11 @@
             label: "Последняя температура",
             unit: "°C",
             color: "#8BD8F5"
+        },
+        humidity_inside: {
+            label: "Последняя влажность",
+            unit: "%",
+            color: "#B9ACFF"
         }
     };
 
@@ -260,6 +274,16 @@ const points = [...pointsByTime.values()]
     .sort((a, b) => a.time - b.time);
 
         const latest = points.at(-1);
+        const measurementValues = points.map(point => point.value);
+        const setStat = (id, number) => {
+            document.getElementById(id).textContent =
+                number == null ? "—" : `${formatNumber(number)} ${metric.unit}`;
+        };
+        setStat("metric-min", measurementValues.length ? Math.min(...measurementValues) : null);
+        setStat("metric-average", measurementValues.length
+            ? measurementValues.reduce((sum, number) => sum + number, 0) / measurementValues.length
+            : null);
+        setStat("metric-max", measurementValues.length ? Math.max(...measurementValues) : null);
 
         document.getElementById("metric-label").textContent =
             metric.label;
@@ -349,6 +373,21 @@ const points = [...pointsByTime.values()]
         }).join(" ");
 
         if (points.length > 1) {
+            const gradient = svgElement("linearGradient", {
+                id: "history-area-gradient", x1: "0", y1: "0", x2: "0", y2: "1"
+            });
+            gradient.appendChild(svgElement("stop", {
+                offset: "0%", "stop-color": metric.color, "stop-opacity": "0.24"
+            }));
+            gradient.appendChild(svgElement("stop", {
+                offset: "100%", "stop-color": metric.color, "stop-opacity": "0"
+            }));
+            const defs = svgElement("defs");
+            defs.appendChild(gradient);
+            chart.appendChild(defs);
+            const baseline = height - bottom;
+            const area = `${path} L ${getX(points.at(-1).time, points.length - 1)} ${baseline} L ${getX(points[0].time, 0)} ${baseline} Z`;
+            chart.appendChild(svgElement("path", {d: area, fill: "url(#history-area-gradient)"}));
             chart.appendChild(svgElement("path", {
                 d: path,
                 fill: "none",
@@ -434,7 +473,8 @@ const points = [...pointsByTime.values()]
             values.append(
                 createValue("CO₂", item.co2, "ppm"),
                 createValue("PM2.5", item.pm25, "мкг/м³"),
-                createValue("Температура", item.temperature_inside, "°C")
+                createValue("Температура", item.temperature_inside, "°C"),
+                createValue("Влажность", item.humidity_inside, "%")
             );
 
             const footer = document.createElement("div");

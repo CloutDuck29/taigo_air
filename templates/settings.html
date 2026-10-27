@@ -182,8 +182,12 @@
 </section>
 
     <form method="POST" id="settings-form">
-      <section class="glass panel">
-        <h2 class="panel-title"><i data-lucide="wind"></i> Качество воздуха</h2>
+      <details class="glass panel settings-fold" open>
+        <summary class="settings-fold-heading">
+          <span class="settings-fold-title"><i data-lucide="wind"></i> Качество воздуха</span>
+          <i data-lucide="chevron-down" class="settings-fold-chevron"></i>
+        </summary>
+        <div class="settings-fold-content">
 
         <label class="field" for="co2-target">
           <span class="field-label">Порог CO₂</span>
@@ -211,10 +215,15 @@
             <span class="unit">мкг/м³</span>
           </span>
         </label>
-      </section>
+        </div>
+      </details>
 
-      <section class="glass panel">
-        <h2 class="panel-title"><i data-lucide="thermometer"></i> Температура</h2>
+      <details class="glass panel settings-fold" >
+        <summary class="settings-fold-heading">
+          <span class="settings-fold-title"><i data-lucide="thermometer"></i> Температура</span>
+          <i data-lucide="chevron-down" class="settings-fold-chevron"></i>
+        </summary>
+        <div class="settings-fold-content">
         <label class="field" for="temperature-drop">
           <span class="field-label">Максимальное охлаждение комнаты</span>
           <span class="field-help">Допустимое снижение температуры в сценарии проветривания.</span>
@@ -223,10 +232,15 @@
             <span class="unit">°C</span>
           </span>
         </label>
-      </section>
+        </div>
+      </details>
 
-      <section class="glass panel">
-        <h2 class="panel-title"><i data-lucide="sliders-horizontal"></i> Параметры модели</h2>
+      <details class="glass panel settings-fold" >
+        <summary class="settings-fold-heading">
+          <span class="settings-fold-title"><i data-lucide="sliders-horizontal"></i> Параметры модели</span>
+          <i data-lucide="chevron-down" class="settings-fold-chevron"></i>
+        </summary>
+        <div class="settings-fold-content">
         <label class="field" for="outdoor-co2">
           <span class="field-label">Предполагаемый наружный CO₂</span>
           <span class="field-help">Условное значение, используемое в расчётах; не показание датчика.</span>
@@ -244,7 +258,8 @@
             <span class="unit">1/ч</span>
           </span>
         </label>
-      </section>
+        </div>
+      </details>
 
       <section class="glass panel">
         <button class="save-button" type="submit">Сохранить настройки</button>
@@ -285,6 +300,13 @@
       const form = document.getElementById("settings-form");
       const target = document.getElementById("co2-target");
       const preferred = document.getElementById("co2-preferred");
+
+      // Раскрываем раздел с невалидным полем для браузерной проверки.
+      form.querySelectorAll("input").forEach(input => {
+        input.addEventListener("invalid", () => {
+          input.closest("details.settings-fold")?.setAttribute("open", "");
+        });
+      });
 
       // Соответствует серверной проверке в main.py.
       form.addEventListener("submit", event => {

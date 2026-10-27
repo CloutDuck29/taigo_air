@@ -168,29 +168,10 @@ L.polygon(
 ).addTo(plumes);
 }
 
-const industryPollutants = {
-    "omsk-chp-3": {
-        substances: "NO₂ · SO₂ · пыль · формальдегид",
-        note: "Перечень нормативов выбросов · 2025",
-        url: "https://e-ecolog.ru/crc/55.01.04.000.Т.000524.07.25"
-    },
-
-    "omsk-refinery": {
-        substances: "Бензол · NO₂ · SO₂ · фенол · пыль",
-        note: "Инвентаризация выбросов · 2022",
-        url: "https://e-ecolog.ru/crc/55.01.04.000.Т.000792.11.22"
-    },
-
-    "omsk-chp-4": {
-        substances: "Угольная генерация: зола, NOₓ, SOₓ",
-        note: "Типичные продукты сжигания; состав выбросов требует проверки",
-        url: "https://www.omgtu.ru/"
-    }
-};
 
 /* ===== ВЫВОД О НАПРАВЛЕНИИ ВЕТРА ===== */
 
-function renderWindConclusion(sources, wind) {
+function renderWindConclusion(sources, wind, plumeResults = []) {
     const conclusion = document.getElementById(
         "home-wind-conclusion"
     );
@@ -279,18 +260,54 @@ conclusion.textContent = relevantCount > 0
 
 name.textContent = source.name || "Предприятие";
 
-const info = industryPollutants[source.id];
-
+const info = source.pollutants;
 const textBlock = document.createElement("div");
 textBlock.className = "home-industry-text";
 
 textBlock.appendChild(name);
+
+
 
 if (info) {
     const substances = document.createElement("span");
     substances.className = "home-industry-substances";
     substances.textContent = info.substances;
     textBlock.appendChild(substances);
+
+    if (info.verified === false) {
+        const warning = document.createElement("span");
+        warning.className = "home-industry-unverified";
+        warning.textContent =
+            "Перечень веществ предварительный";
+
+        textBlock.appendChild(warning);
+    }
+}
+
+const plume = plumeResults.find(
+    item => item.source_id === source.id
+);
+
+if (plume) {
+    const plumeInfo = document.createElement("span");
+    plumeInfo.className = "home-industry-plume";
+
+    if (plume.within_plume === true) {
+        plumeInfo.textContent =
+            "Внутри условной полосы шлейфа";
+        plumeInfo.classList.add("plume-inside");
+
+    } else if (plume.within_plume === false) {
+        plumeInfo.textContent =
+            "Вне условной полосы шлейфа";
+        plumeInfo.classList.add("plume-outside");
+
+    } else {
+        plumeInfo.textContent =
+            "Модельный шлейф не рассчитан";
+    }
+
+    textBlock.appendChild(plumeInfo);
 }
 
         const distance = document.createElement("span");
@@ -316,9 +333,17 @@ if (info) {
     const health = document.getElementById("home-wind-health");
 
     if (health) {
-        const substances = relevant
-            .map(source => industryPollutants[source.id]?.substances || "")
-            .join(" ");
+const substances = relevant
+    .map(source => {
+        const info = source.pollutants;
+
+        if (!info || info.verified !== true) {
+            return "";
+        }
+
+        return info.substances || "";
+    })
+    .join(" ");
 
         const effects = [];
 
@@ -390,6 +415,27 @@ if (info) {
             const industry = await industryResponse.json();
             const air = await airResponse.json();
 
+let plumeResults = [];
+
+try {
+    const plumeResponse = await fetch("/api/plume", {
+        cache: "no-store"
+    });
+
+    if (plumeResponse.ok) {
+        const plumeData = await plumeResponse.json();
+
+        if (Array.isArray(plumeData.results)) {
+            plumeResults = plumeData.results;
+        }
+    }
+} catch (error) {
+    console.warn(
+        "TaigoPlume недоступен:",
+        error
+    );
+}
+
             if (!industryResponse.ok) {
                 throw new Error(
                     industry.error ||
@@ -405,7 +451,7 @@ plumes.clearLayers();
                 : [];
 
             const wind = industry.wind;
-renderWindConclusion(sources, wind);
+renderWindConclusion(sources, wind, plumeResults);
             const validWind = wind &&
                 Number.isFinite(Number(wind.direction)) &&
                 Number.isFinite(Number(wind.speed)) &&

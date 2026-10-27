@@ -1,4 +1,87 @@
 
+function renderMainOutdoorContext(context) {
+    const details = document.getElementById(
+        "main-outdoor-details"
+    );
+
+    const content = document.getElementById(
+        "main-outdoor-content"
+    );
+
+    if (!details || !content) return;
+
+    if (!context) {
+        details.hidden = true;
+        details.open = false;
+        content.replaceChildren();
+        return;
+    }
+
+    details.hidden = false;
+    content.replaceChildren();
+
+    const addRow = (label, value) => {
+        const row = document.createElement("div");
+        row.className = "main-outdoor-row";
+
+        const name = document.createElement("span");
+        name.textContent = label;
+
+        const result = document.createElement("strong");
+        result.textContent = value;
+
+        row.append(name, result);
+        content.appendChild(row);
+    };
+
+    const formatNumber = (value, digits = 0) =>
+        value == null || !Number.isFinite(Number(value))
+            ? "—"
+            : Number(value).toLocaleString("ru-RU", {
+                maximumFractionDigits: digits
+            });
+
+    addRow(
+        "PM2.5 снаружи",
+        `${formatNumber(context.pm25, 1)} мкг/м³`
+    );
+
+    addRow(
+        "EU AQI",
+        formatNumber(context.aqi)
+    );
+
+    addRow(
+        "Предприятия по ветру",
+        context.industry_status === "ok"
+            ? String(context.industry_count ?? 0)
+            : "Нет данных"
+    );
+
+    if (context.pm25_comparison === "higher") {
+        addRow(
+            "Сравнение PM2.5",
+            "Снаружи выше"
+        );
+    } else if (
+        context.pm25_comparison === "not_higher"
+    ) {
+        addRow(
+            "Сравнение PM2.5",
+            "Снаружи не выше"
+        );
+    }
+
+    const note = document.createElement("p");
+    note.className = "main-outdoor-note";
+    note.textContent =
+        "Промышленный перенос определяется по ветру. " +
+        "Это не измерение загрязнения у дома.";
+
+    content.appendChild(note);
+}
+
+
 async function loadMainRecommendation() {
     const modeElement = document.getElementById(
         "main-window-mode"
@@ -33,6 +116,11 @@ async function loadMainRecommendation() {
                 data.error || "Не удалось получить прогноз"
             );
         }
+        renderMainOutdoorContext(
+    data.status === "closed"
+        ? null
+        : data.outdoor_context
+);
 
         modeElement.textContent =
             data.window_label ||
@@ -76,8 +164,9 @@ if (data.status === "closed") {
         reasonElement.textContent =
             recommendation.reason;
 
-    } catch (error) {
-        modeElement.textContent = "—";
+} catch (error) {
+    renderMainOutdoorContext(null);
+    modeElement.textContent = "—";
         decisionElement.textContent =
             "Прогноз недоступен";
         timeElement.textContent = "—";

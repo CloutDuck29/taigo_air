@@ -8,6 +8,11 @@ DATA_PATH = (
     / "data"
     / "industries.json"
 )
+POLLUTANTS_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "data"
+    / "industry_pollutants.json"
+)
 
 
 def calculate_distance(lat1, lon1, lat2, lon2):
@@ -35,6 +40,9 @@ def get_industrial_sources(latitude, longitude):
     with open(DATA_PATH, encoding="utf-8") as file:
         data = json.load(file)
 
+    with open(POLLUTANTS_PATH, encoding="utf-8") as file:
+        pollutants = json.load(file)
+
     sources = []
 
     for source in data["sources"]:
@@ -47,7 +55,14 @@ def get_industrial_sources(latitude, longitude):
 
         sources.append({
             **source,
-            "distance_km": round(distance, 2)
+            "distance_km": round(distance, 2),
+            "pollutants": pollutants.get(
+                source["id"],
+                {
+                    "substances": None,
+                    "verified": False
+                }
+            )
         })
 
     sources.sort(

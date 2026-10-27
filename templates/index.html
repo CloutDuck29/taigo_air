@@ -84,7 +84,18 @@
           <strong id="window-mode-label">—</strong>
         </div>
       </div>
+<div id="window-quick-advice"
+     class="window-quick-advice"
+     data-status="loading"
+     role="status"
+     aria-live="polite">
 
+  <span class="window-quick-advice-dot"></span>
+
+  <span id="window-quick-advice-text">
+    Рассчитываем...
+  </span>
+</div>
       <button class="window-button"
               type="button"
               onclick="openModal('window-modal')">
@@ -193,6 +204,22 @@
 
   </div>
 
+<section class="glass outdoor-forecast-panel section">
+  <div class="air-section-heading">
+    <i data-lucide="clock-3"></i>
+    <h2>Прогноз воздуха</h2>
+  </div>
+
+  <div id="outdoor-forecast-cards" class="outdoor-forecast-grid">
+    <p class="outdoor-forecast-message">
+      Загружаем прогноз...
+    </p>
+  </div>
+
+  <p class="outdoor-forecast-note">
+    Модельный прогноз Open-Meteo, не измерение у дома.
+  </p>
+</section>
 
 <section class="glass air-map-panel section">
 
@@ -312,7 +339,17 @@
   Расчёт использует тестовые показания
   датчиков. Результат демонстрационный.
 </p>
+<details class="main-outdoor-details" id="main-outdoor-details" hidden>
+  <summary class="main-outdoor-toggle">
+    <span>
+      <i data-lucide="cloud-sun"></i>
+      Наружные условия
+    </span>
+    <i data-lucide="chevron-down"></i>
+  </summary>
 
+  <div class="main-outdoor-content" id="main-outdoor-content"></div>
+</details>
     <a href="/forecast" class="action full">
       Подробный прогноз →
     </a>
@@ -1624,11 +1661,158 @@ async function saveWindowMode() {
 /* Рекомендация */
 
 
+function renderMainOutdoorContext(context) {
+    const details = document.getElementById(
+        "main-outdoor-details"
+    );
+
+    const content = document.getElementById(
+        "main-outdoor-content"
+    );
+
+    if (!details || !content) return;
+
+    if (!context) {
+        details.hidden = true;
+        details.open = false;
+        content.replaceChildren();
+        return;
+    }
+
+    details.hidden = false;
+    content.replaceChildren();
+
+    const addRow = (label, value) => {
+        const row = document.createElement("div");
+        row.className = "main-outdoor-row";
+
+        const name = document.createElement("span");
+        name.textContent = label;
+
+        const result = document.createElement("strong");
+        result.textContent = value;
+
+        row.append(name, result);
+        content.appendChild(row);
+    };
+
+    const formatNumber = (value, digits = 0) =>
+        value == null || !Number.isFinite(Number(value))
+            ? "—"
+            : Number(value).toLocaleString("ru-RU", {
+                maximumFractionDigits: digits
+            });
+
+    addRow(
+        "PM2.5 снаружи",
+        `${formatNumber(context.pm25, 1)} мкг/м³`
+    );
+
+    addRow(
+        "EU AQI",
+        formatNumber(context.aqi)
+    );
+
+    addRow(
+        "Предприятия по ветру",
+        context.industry_status === "ok"
+            ? String(context.industry_count ?? 0)
+            : "Нет данных"
+    );
+
+    if (context.pm25_comparison === "higher") {
+        addRow(
+            "Сравнение PM2.5",
+            "Снаружи выше"
+        );
+    } else if (
+        context.pm25_comparison === "not_higher"
+    ) {
+        addRow(
+            "Сравнение PM2.5",
+            "Снаружи не выше"
+        );
+    }
+
+    const note = document.createElement("p");
+    note.className = "main-outdoor-note";
+    note.textContent =
+        "Промышленный перенос определяется по ветру. " +
+        "Это не измерение загрязнения у дома.";
+
+    content.appendChild(note);
+}
+
+
+
+function updateWindowQuickAdvice(data) {
+  const box = document.getElementById("window-quick-advice");
+  const text = document.getElementById("window-quick-advice-text");
+
+  if (!box || !text) return;
+
+  const recommendation = data?.recommendation || {};
+  const decision = recommendation.decision || "";
+
+  const recommended = recommendation.recommended_minutes;
+  const possible = recommendation.possible_minutes;
+  const minutes = recommended ?? possible;
+
+  const sensorOpen = state.sensors?.window_open;
+  const isSimulation = state.sensors?.mode !== "hardware";
+
+  let message = "Нет данных для расчёта";
+  let status = "neutral";
+
+  if (decision === "Проветривание не требуется") {
+    message = "Проветривание не требуется";
+    status = "good";
+
+  } else if (data?.status === "closed") {
+    message = "Выбери режим проветривания";
+    status = "neutral";
+
+  } else if (
+    minutes != null &&
+    Number.isFinite(Number(minutes)) &&
+    Number(minutes) > 0
+  ) {
+    const approximate = possible != null &&
+                        recommended == null;
+
+    const duration = approximate
+      ? `~${minutes} мин`
+      : `${minutes} мин`;
+
+    const action = isSimulation
+      ? "По модели: проветрить"
+      : sensorOpen === true
+        ? "Проветривать"
+        : sensorOpen === false
+          ? "Открыть окно"
+          : "Проветрить";
+
+    message = `${action} · ${duration}`;
+    status = "action";
+
+  } else if (decision === "Подходящего сценария нет") {
+    message = "Цель за 20 мин не достигнута";
+    status = "warning";
+  }
+
+  text.textContent = message;
+  box.dataset.status = status;
+}
+
 async function refreshRecommendation() {
   try {
     const d = await api("/api/forecast/scenarios");
     state.forecast = d;
-
+renderMainOutdoorContext(
+    d.status === "closed"
+        ? null
+        : d.outdoor_context
+);
     const r = d.recommendation || {};
     const decision = r.decision || "";
 
@@ -1676,8 +1860,13 @@ if (decision === "Подходящего сценария нет") {
     put("recommendation-decision", title);
     put("recommendation-time", duration);
     put("recommendation-reason", explanation);
+    updateWindowQuickAdvice(d);
 
-  } catch (error) {
+} catch (error) {
+    state.forecast = null;
+    renderMainOutdoorContext(null);
+    updateWindowQuickAdvice(null);
+
     put("recommendation-decision",
       "Не удалось рассчитать прогноз");
 
@@ -1892,5 +2081,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 </script>
+<script src="{{ url_for('static', filename='js/outdoor_forecast.js') }}"></script>
 </body>
 </html>

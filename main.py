@@ -12,6 +12,7 @@ from services.weather import get_weather
 from services.wind_analysis import analyze_wind
 from services.air_quality import get_air_quality
 from services.forecast import forecast_ventilation
+from services.outdoor_forecast import get_outdoor_forecast
 from services.recommendations import (
     get_recommendation,
     get_scenario_recommendation
@@ -367,6 +368,31 @@ def save_map_home():
         "latitude": latitude,
         "longitude": longitude
     })
+
+
+
+@app.route("/api/outdoor-forecast")
+def outdoor_forecast_api():
+    home = get_home()
+
+    if (
+        not home
+        or home["latitude"] is None
+        or home["longitude"] is None
+    ):
+        return jsonify({
+            "error": "Сначала выбери дом на карте"
+        }), 400
+
+    result = get_outdoor_forecast(
+        home["latitude"],
+        home["longitude"]
+    )
+
+    if result["status"] == "error":
+        return jsonify(result), 503
+
+    return jsonify(result)
 
 
 
@@ -1212,6 +1238,70 @@ def forecast_scenarios_api():
             settings=settings
         )
 
+
+        # Дополнительный анализ наружных условий.
+        # Не подменяет основной расчёт проветривания.
+        outdoor_context = {
+            "pm25": float(air["pm25"]),
+            "aqi": air.get("aqi"),
+            "pm25_comparison": None,
+            "industry_count": None,
+            "industry_status": "unavailable",
+            "warnings": []
+        }
+
+        indoor_pm25 = float(sensors["pm25"])
+        outdoor_pm25 = float(air["pm25"])
+
+        if outdoor_pm25 > indoor_pm25:
+            outdoor_context["pm25_comparison"] = "higher"
+            outdoor_context["warnings"].append(
+                "Снаружи PM2.5 выше, чем внутри. "
+                "Проветривание может увеличить "
+                "концентрацию частиц."
+            )
+        else:
+            outdoor_context["pm25_comparison"] = "not_higher"
+
+        if (
+            home.get("latitude") is not None
+            and home.get("longitude") is not None
+            and weather.get("wind_direction") is not None
+            and weather.get("wind_speed") is not None
+        ):
+            try:
+                sources = get_industrial_sources(
+                    home["latitude"],
+                    home["longitude"]
+                )
+
+                relevant_sources = [
+                    source for source in sources
+                    if analyze_wind(
+                        source,
+                        home,
+                        float(weather["wind_direction"]),
+                        float(weather["wind_speed"])
+                    )["position_code"] in ("downwind", "edge")
+                ]
+
+                outdoor_context["industry_count"] = len(
+                    relevant_sources
+                )
+                outdoor_context["industry_status"] = "ok"
+
+                if relevant_sources:
+                    outdoor_context["warnings"].append(
+                        "Ветер потенциально направлен "
+                        "от некоторых предприятий к дому. "
+                        "Это не подтверждает загрязнение."
+                    )
+
+            except (OSError, ValueError, TypeError, KeyError):
+                app.logger.exception(
+                    "Не удалось выполнить промышленный анализ"
+                )
+
         return jsonify({
             "status": "ok",
             "window_mode": ventilation["window_mode"],
@@ -1220,6 +1310,7 @@ def forecast_scenarios_api():
             "calibrated": False,
             "scenarios": scenarios,
             "recommendation": scenario_recommendation,
+            "outdoor_context": outdoor_context,
             "limitations": ventilation["limitations"]
 
         })
