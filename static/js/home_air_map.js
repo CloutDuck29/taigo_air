@@ -145,9 +145,12 @@ function getIndustryColor(industry) {
                 ...right.reverse()
             ],
 {
-    color: getIndustryColor(source.industry),
-    fillColor: getIndustryColor(source.industry),
-    fillOpacity: 0.10,
+    color: "#FFC247",
+    fillColor: "#FFC247",
+    fillOpacity:
+        source.wind_analysis?.position_code === "edge"
+            ? 0.04
+            : 0.12,
     opacity: 0.45,
     weight: 1,
     interactive: false
@@ -216,16 +219,11 @@ function renderWindConclusion(sources, wind) {
         source.wind_analysis.position_code === "edge"
     );
 
-    if (downwind.length > 0) {
-        conclusion.textContent =
-            `Ветер в сторону дома от ${downwind.length} предприятий`;
-    } else if (edge.length > 0) {
-        conclusion.textContent =
-            `Возможен перенос от ${edge.length} предприятий`;
-    } else {
-        conclusion.textContent =
-            "Ветер от известных предприятий не направлен к дому";
-    }
+const relevantCount = downwind.length + edge.length;
+
+conclusion.textContent = relevantCount > 0
+    ? `Возможен перенос от ${relevantCount} предприятий`
+    : "Ветер от известных предприятий не направлен к дому";
 
     const relevant = [...downwind, ...edge].sort((a, b) => {
         const aDistance = Number(a.distance_km);
@@ -249,9 +247,7 @@ function renderWindConclusion(sources, wind) {
         const isEdge =
             source.wind_analysis.position_code === "edge";
 
-        name.textContent =
-            (isEdge ? "Вблизи направления: " : "") +
-            (source.name || "Предприятие");
+name.textContent = source.name || "Предприятие";
 
         const distance = document.createElement("span");
         distance.className = "home-wind-source-distance";
@@ -271,34 +267,6 @@ function renderWindConclusion(sources, wind) {
 
         rows.push(card);
     }
-
-    if (rows.length <= 2) return;
-
-    // По умолчанию видны только два предприятия.
-    rows.forEach((row, index) => {
-        row.hidden = index >= 2;
-    });
-
-    showMore.hidden = false;
-    showMore.textContent = `Показать все (${rows.length})`;
-
-    showMore.onclick = () => {
-        const expanded =
-            showMore.getAttribute("aria-expanded") === "true";
-
-        rows.forEach((row, index) => {
-            row.hidden = expanded && index >= 2;
-        });
-
-        showMore.setAttribute(
-            "aria-expanded",
-            String(!expanded)
-        );
-
-        showMore.textContent = expanded
-            ? `Показать все (${rows.length})`
-            : "Свернуть";
-    };
 }
 
     async function loadMapData() {
@@ -366,35 +334,63 @@ L.circleMarker(
                 )
                 .addTo(markers);
 
-                if (validWind) {
-                    drawWindSector(
-                        source,
-                        Number(wind.direction)
-                    );
-                }
+const position = source.wind_analysis?.position_code;
+
+if (
+    validWind &&
+    (position === "downwind" || position === "edge")
+) {
+    drawWindSector(
+        source,
+        Number(wind.direction)
+    );
+}
             }
 
-            const homeLat = Number(air.latitude);
-            const homeLon = Number(air.longitude);
+const homeLocation = document.getElementById("home-location");
 
-            if (
-                airResponse.ok &&
-                Number.isFinite(homeLat) &&
-                Number.isFinite(homeLon)
-            ) {
-                L.circleMarker(
-                    [homeLat, homeLon],
-                    {
-                        radius: 8,
-                        color: "#fff",
-                        fillColor: "#79d9a0",
-                        fillOpacity: 1,
-                        weight: 2
-                    }
-                )
-                .bindPopup("Точка оценки наружного воздуха")
-                .addTo(markers);
-            }
+const rawLat = homeLocation?.dataset.latitude ?? "";
+const rawLon = homeLocation?.dataset.longitude ?? "";
+
+const homeLat = rawLat === "" ? NaN : Number(rawLat);
+const homeLon = rawLon === "" ? NaN : Number(rawLon);
+
+if (
+    Number.isFinite(homeLat) &&
+    Number.isFinite(homeLon) &&
+    homeLat >= -90 && homeLat <= 90 &&
+    homeLon >= -180 && homeLon <= 180
+) {
+    const homeIcon = L.divIcon({
+        className: "taigo-home-marker",
+        html: `
+          <div class="taigo-home-pin">
+            <svg viewBox="0 0 24 24"
+                 width="23"
+                 height="23"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2.2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+              <path d="m3 10 9-7 9 7"/>
+              <path d="M5 9v12h14V9"/>
+              <path d="M9 21v-8h6v8"/>
+            </svg>
+          </div>
+        `,
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+        popupAnchor: [0, -22]
+    });
+
+    L.marker([homeLat, homeLon], {
+        icon: homeIcon,
+        zIndexOffset: 1000
+    })
+        .bindPopup("Мой дом")
+        .addTo(markers);
+}
 
             if (markers.getLayers().length) {
                 map.fitBounds(markers.getBounds(), {

@@ -237,7 +237,8 @@ def forecast_api():
 def index():
     return render_template(
         "index.html",
-        settings=get_settings()
+        settings=get_settings(),
+        home=get_home()
     )
 
 
@@ -310,11 +311,6 @@ def air_quality_api():
         return jsonify(data), 503
 
     return jsonify(data)
-
-
-@app.route("/map")
-def map_page():
-    return render_template("map.html", home=get_home())
 
 
 
@@ -592,6 +588,7 @@ def settings_page():
     return render_template(
         "settings.html",
         settings=get_settings(),
+        home=get_home(),
         saved=saved,
         error=error
     )

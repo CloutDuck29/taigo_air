@@ -656,7 +656,7 @@ height: calc(
   z-index: 30;
 
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0,1fr));
   gap: 2px;
 
   padding: 12px 8px;
@@ -1546,4 +1546,185 @@ input[type="number"]:focus-visible {
   display: inline-block;
   vertical-align: middle;
   margin-right: 7px;
+}
+
+/* ===== ПРОМЫШЛЕННОЕ ОКРУЖЕНИЕ ===== */
+
+.industry-summary-caption {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.air-map-panel .home-wind-analysis {
+  margin-bottom: 14px;
+}
+
+.air-map-panel .home-wind-conclusion {
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -.3px;
+}
+
+.industry-summary-explanation {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.home-industry-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 14px;
+
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 15px;
+
+  background: rgba(255,255,255,.08);
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.home-industry-toggle svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--yellow);
+  transition: transform .2s ease;
+}
+
+.home-industry-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.home-industry-details {
+  margin-top: 14px;
+}
+
+.home-industry-details[hidden],
+.home-wind-more[hidden],
+.home-wind-source[hidden] {
+  display: none !important;
+}
+
+.home-industry-details .home-wind-sources {
+  margin-top: 12px;
+}
+
+.home-industry-details .home-wind-disclaimer {
+  margin-top: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-industry-toggle svg {
+    transition: none;
+  }
+}
+/* Дом на промышленной карте */
+
+.taigo-home-marker {
+    background: transparent;
+    border: none;
+}
+
+.taigo-home-pin {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    background: #79D9A0;
+    color: #18382c;
+    border: 3px solid white;
+    border-radius: 14px;
+    box-shadow: 0 3px 12px rgba(0,0,0,.4);
+}
+
+/* Краткое влияние */
+
+.home-wind-impact {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 15px;
+    background: rgba(255,255,255,.065);
+}
+
+.home-wind-impact > svg {
+    width: 19px;
+    height: 19px;
+    flex-shrink: 0;
+    color: var(--yellow);
+}
+
+.home-wind-impact p {
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(255,255,255,.85);
+}
+/* Компактная промышленная карта */
+
+.air-map-panel .home-wind-conclusion {
+    margin: 12px 0 14px;
+    font-size: 17px;
+    line-height: 1.35;
+    font-weight: 700;
+}
+
+.air-map-panel .home-map-container {
+    margin-top: 0;
+}
+
+.air-map-panel .home-wind-sources {
+    margin-top: 10px;
+}
+
+.air-map-panel .home-wind-source {
+    padding: 10px 12px;
+    font-size: 12px;
+}
+
+.air-map-panel .air-map-status {
+    font-size: 11px;
+    line-height: 1.4;
+    margin: 9px 0;
+}
+
+.air-map-panel .home-wind-impact {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    margin-top: 12px;
+    padding: 10px 12px;
+}
+
+.air-map-panel .home-wind-impact svg {
+    width: 17px;
+    height: 17px;
+    flex-shrink: 0;
+    color: #FFC247;
+}
+
+.air-map-panel .home-wind-impact span {
+    font-size: 12px;
+    line-height: 1.45;
+    color: rgba(255,255,255,.85);
+}
+
+.air-map-panel .home-wind-disclaimer {
+    margin-top: 8px;
+    font-size: 10px;
 }

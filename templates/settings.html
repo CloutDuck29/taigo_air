@@ -11,6 +11,26 @@
   <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js" defer></script>
 <link rel="stylesheet"
       href="{{ url_for('static', filename='css/settings.css') }}">
+
+    <link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  defer>
+</script>
+
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/settings_home.css') }}"
+>
+
+<script
+  src="{{ url_for('static', filename='js/settings_home.js') }}"
+  defer>
+</script>
 </head>
 <body>
   <div class="background"></div>
@@ -29,6 +49,137 @@
     {% if error %}
     <div class="notice error" role="alert">Ошибка: {{ error }}</div>
     {% endif %}
+
+<section class="glass panel home-settings">
+
+  <div class="home-settings-heading">
+    <div class="home-settings-icon">
+      <i data-lucide="house"></i>
+    </div>
+    <div class="home-settings-text">
+      <h2>Мой дом</h2>
+      <p>Расположение и параметры комнаты</p>
+    </div>
+  </div>
+
+  <div class="home-address">
+    <span class="home-address-label">Адрес</span>
+
+    <strong id="home-address-text">
+      {{ home.address if home and home.address else "Дом не выбран" }}
+    </strong>
+
+    <button
+      type="button"
+      id="home-map-toggle"
+      class="home-map-toggle"
+      aria-expanded="false"
+      aria-controls="home-map-wrap">
+      <i data-lucide="map-pin"></i>
+      Изменить адрес
+      <i data-lucide="chevron-down"></i>
+    </button>
+  </div>
+
+  <div id="home-map-wrap" class="home-map-wrap" hidden>
+    <div class="home-map-container">
+  <div id="home-map" aria-label="Выбор дома на карте Омска"></div>
+
+  <button
+    type="button"
+    id="home-map-interaction"
+    class="home-map-interaction"
+    aria-label="Включить управление картой"
+    aria-pressed="false"
+    title="Управление картой">
+    <i data-lucide="hand"></i>
+  </button>
+</div>
+    <p id="home-map-status" class="home-map-status">
+      Нажми на карте, чтобы выбрать дом.
+    </p>
+  </div>
+
+  <form id="home-form" class="home-room-form">
+
+    <div class="home-room-grid">
+
+      <label class="home-room-field">
+        <span>Этаж</span>
+        <input
+          id="home-floor"
+          type="number"
+          min="1"
+          max="100"
+          required
+          value="{{ home.floor if home and home.floor is not none else 1 }}">
+      </label>
+
+      <label class="home-room-field">
+        <span>Направление окна</span>
+        <select id="home-direction">
+          {% set direction = home.window_direction if home else "N" %}
+          {% for code, name in [
+            ("N", "Север"),
+            ("NE", "Северо-восток"),
+            ("E", "Восток"),
+            ("SE", "Юго-восток"),
+            ("S", "Юг"),
+            ("SW", "Юго-запад"),
+            ("W", "Запад"),
+            ("NW", "Северо-запад")
+          ] %}
+          <option
+            value="{{ code }}"
+            {% if direction == code %}selected{% endif %}>
+            {{ name }}
+          </option>
+          {% endfor %}
+        </select>
+      </label>
+
+      <label class="home-room-field">
+        <span>Площадь комнаты, м²</span>
+        <input
+          id="home-area"
+          type="number"
+          min="0.1"
+          max="1000"
+          step="0.1"
+          required
+          value="{{ home.room_area if home and home.room_area is not none else 18 }}">
+      </label>
+
+      <label class="home-room-field">
+        <span>Высота потолка, м</span>
+        <input
+          id="home-height"
+          type="number"
+          min="1.5"
+          max="10"
+          step="0.1"
+          required
+          value="{{ home.ceiling_height if home and home.ceiling_height is not none else 2.7 }}">
+      </label>
+
+    </div>
+
+    <button type="submit" id="home-save" class="save-button">
+      Сохранить дом
+    </button>
+
+    <p id="home-save-status" class="home-map-status"
+       role="status" aria-live="polite"></p>
+  </form>
+
+  <div
+    id="home-coordinates"
+    data-latitude="{{ home.latitude if home and home.latitude is not none else '' }}"
+    data-longitude="{{ home.longitude if home and home.longitude is not none else '' }}"
+    hidden>
+  </div>
+
+</section>
 
     <form method="POST" id="settings-form">
       <section class="glass panel">
@@ -101,22 +252,28 @@
       </section>
     </form>
 
-    <section class="glass panel">
-      <h2 class="panel-title"><i data-lucide="house"></i> Другие разделы</h2>
-      <div class="quick-links">
-        <a class="quick-link" href="/map">Настроить квартиру <i data-lucide="arrow-up-right"></i></a>
-        <a class="quick-link" href="/forecast">Прогноз <i data-lucide="arrow-up-right"></i></a>
-      </div>
-    </section>
+
   </main>
 
-  <nav class="bottom-nav" aria-label="Основная навигация">
-    <a href="/" class="nav-link"><i data-lucide="house"></i><span>Главная</span></a>
-    <a href="/map" class="nav-link"><i data-lucide="map"></i><span>Карта</span></a>
-    <a href="/history" class="nav-link"><i data-lucide="history"></i><span>История</span></a>
-    <a href="/settings" class="nav-link active" aria-current="page"><i data-lucide="settings-2"></i><span>Настройки</span></a>
-  </nav>
 
+<nav class="bottom-nav" aria-label="Основная навигация">
+  <a href="/" class="nav-link">
+    <i data-lucide="house"></i>
+    <span>Главная</span>
+  </a>
+
+  <a href="/history" class="nav-link">
+    <i data-lucide="history"></i>
+    <span>История</span>
+  </a>
+
+  <a href="/settings"
+     class="nav-link active"
+     aria-current="page">
+    <i data-lucide="settings-2"></i>
+    <span>Настройки</span>
+  </a>
+</nav>
   <script>
     "use strict";
 

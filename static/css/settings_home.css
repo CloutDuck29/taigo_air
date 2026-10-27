@@ -1,0 +1,226 @@
+
+/* ===== МОЙ ДОМ В НАСТРОЙКАХ ===== */
+
+.home-settings {
+  padding: 18px;
+}
+
+.home-settings-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.home-settings-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 15px;
+  background: rgba(255,194,71,.12);
+  color: var(--yellow);
+}
+
+.home-settings-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.home-settings-text h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.home-settings-text p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.home-address {
+  padding: 14px;
+  border-radius: 17px;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+}
+
+.home-address-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+#home-address-text {
+  display: block;
+  line-height: 1.45;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+
+.home-map-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.home-map-toggle svg {
+  width: 17px;
+  height: 17px;
+}
+
+.home-map-toggle svg:last-child {
+  transition: transform .2s ease;
+}
+
+.home-map-toggle[aria-expanded="true"] svg:last-child {
+  transform: rotate(180deg);
+}
+
+.home-map-wrap {
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 17px;
+  border: 1px solid rgba(255,255,255,.16);
+}
+
+.home-map-wrap[hidden] {
+  display: none !important;
+}
+
+#home-map {
+  width: 100%;
+  height: 290px;
+  background: #cdd6d3;
+  touch-action: auto;;
+}
+
+.home-map-status {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.home-map-wrap .home-map-status {
+  padding: 0 13px 13px;
+}
+
+.home-room-form {
+  margin-top: 18px;
+}
+
+.home-room-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 13px;
+}
+
+.home-room-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.home-room-field > span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.home-room-field input,
+.home-room-field select {
+  width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 11px;
+
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 13px;
+  outline: none;
+
+  background: #263842;
+  color: white;
+  font: inherit;
+  font-size: 14px;
+}
+
+.home-room-field input:focus,
+.home-room-field select:focus {
+  border-color: var(--yellow);
+}
+
+#home-save {
+  width: 100%;
+  margin-top: 18px;
+}
+
+#home-save:disabled {
+  opacity: .6;
+  cursor: wait;
+}
+
+#home-save-status:empty {
+  display: none;
+}
+
+@media (max-width: 360px) {
+  .home-room-grid {
+    grid-template-columns: 1fr;
+  }
+}
+/* ===== УПРАВЛЕНИЕ КАРТОЙ ===== */
+
+.home-map-container {
+  position: relative;
+}
+
+#home-map {
+  touch-action: pan-y;
+}
+
+#home-map.map-interactive {
+  touch-action: none;
+}
+
+.home-map-interaction {
+  position: absolute;
+  right: 14px;
+  bottom: 30px;
+  z-index: 500;
+
+  display: grid;
+  place-items: center;
+
+  width: 46px;
+  height: 46px;
+
+  border: 1px solid rgba(255,255,255,.25);
+  border-radius: 50%;
+
+  background: rgba(27,40,46,.92);
+  color: white;
+
+  box-shadow: 0 4px 16px rgba(0,0,0,.25);
+}
+
+.home-map-interaction svg {
+  width: 22px;
+  height: 22px;
+}
+
+.home-map-interaction.active {
+  background: var(--yellow);
+  border-color: var(--yellow);
+  color: #202a30;
+}

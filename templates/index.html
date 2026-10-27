@@ -192,51 +192,52 @@
     </button>
 
   </div>
-    <!-- КАРТА ПЕРЕНОСА ВОЗДУХА -->
+
 
 <section class="glass air-map-panel section">
 
   <div class="air-section-heading">
-    <i data-lucide="map-pinned"></i>
-    <h2>Ветер и предприятия</h2>
+    <i data-lucide="factory"></i>
+    <h2>Промышленное окружение</h2>
   </div>
-
-<div class="home-map-container">
-
-  <div
-    id="home-air-map"
-    role="region"
-    aria-label="Карта направления ветра">
-  </div>
-
-  <button
-    type="button"
-    id="home-map-interaction-toggle"
-    class="home-map-control-button"
-    aria-label="Включить управление картой"
-    aria-pressed="false"
-    title="Управление картой">
-
-    <i data-lucide="hand"></i>
-
-  </button>
-
-</div>
-
-  <p
-    id="home-air-map-status"
-    class="air-map-status"
-    role="status">
-    Загружаем карту...
-  </p>
-
-<div class="home-wind-analysis">
 
   <p
     id="home-wind-conclusion"
     class="home-wind-conclusion"
     aria-live="polite">
     Проверяем направление ветра...
+  </p>
+
+  <div
+    id="home-location"
+    data-latitude="{{ home.latitude if home and home.latitude is not none else '' }}"
+    data-longitude="{{ home.longitude if home and home.longitude is not none else '' }}"
+    hidden>
+  </div>
+
+  <div class="home-map-container">
+    <div
+      id="home-air-map"
+      role="region"
+      aria-label="Карта промышленного окружения">
+    </div>
+
+    <button
+      type="button"
+      id="home-map-interaction-toggle"
+      class="home-map-control-button"
+      aria-label="Включить управление картой"
+      aria-pressed="false"
+      title="Управление картой">
+      <i data-lucide="hand"></i>
+    </button>
+  </div>
+
+  <p
+    id="home-air-map-status"
+    class="air-map-status"
+    role="status">
+    Загружаем данные...
   </p>
 
   <div
@@ -250,16 +251,25 @@
     type="button"
     hidden>
     Показать все
-    <i data-lucide="chevron-down"></i>
   </button>
 
-  <p class="home-wind-disclaimer">
-    Направление ветра, не факт загрязнения.
+  <p class="home-wind-impact">
+    <i data-lucide="heart-pulse"></i>
+    <span>
+      При наличии выбросов газы и частицы могут
+      переноситься ветром. Частицы способны оседать
+      на поверхностях, а загрязнённый воздух —
+      раздражать дыхательные пути.
+    </span>
   </p>
 
-</div>
+  <p class="home-wind-disclaimer">
+    Оценка по ветру, не измерение загрязнения.
+  </p>
 
 </section>
+
+
   <!-- РЕКОМЕНДАЦИЯ -->
   <section class="glass recommendation section">
 
@@ -329,10 +339,6 @@
     <span>Главная</span>
   </a>
 
-  <a href="/map" class="nav-link">
-    <i data-lucide="map"></i>
-    <span>Карта</span>
-  </a>
 
   <a href="/history" class="nav-link">
     <i data-lucide="history"></i>
@@ -743,12 +749,6 @@
             onclick="refreshSensors()">
       ↻ Обновить измерения
     </button>
-
-<a href="/map"
-   class="action full device-settings-link">
-<i data-lucide="house" class="device-settings-icon"></i>
-  Настройки квартиры
-</a>
 
   </div>
 </div>

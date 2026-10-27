@@ -210,7 +210,7 @@
       max-width: 448px;
       z-index: 30;
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(3, minmax(0,1fr));
       gap: 2px;
       padding: 12px 8px;
       border-radius: 28px;
@@ -325,4 +325,87 @@ textarea {
 }
 .settings-note-spaced {
   margin-top: 12px;
+}
+/* ===== МОЙ ДОМ ===== */
+
+.home-settings {
+  padding: 18px;
+}
+
+.home-settings-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.home-settings-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+
+  border-radius: 15px;
+  background: rgba(255, 194, 71, .12);
+  color: var(--yellow);
+}
+
+.home-settings-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.home-settings-text h2 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.home-settings-text p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.home-settings-details {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  margin-top: 17px;
+  padding-top: 15px;
+
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+
+.home-settings-details > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.home-settings-details span {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.home-settings-details strong {
+  font-size: 13px;
+}
+
+.home-settings-action {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+
+  color: var(--yellow);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.home-settings-action svg {
+  width: 17px;
+  height: 17px;
 }

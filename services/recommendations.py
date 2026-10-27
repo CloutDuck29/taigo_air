@@ -231,13 +231,61 @@ def get_scenario_recommendation(scenarios, indoor_co2,
             "comparisons": comparisons
         }
 
+    failures = {
+        "co2": 0,
+        "pm25": 0,
+        "temperature": 0
+    }
+
+    total_points = 0
+
+    for scenario in scenarios:
+        for point in scenario["results"]:
+            total_points += 1
+
+            if point["co2"] > co2_target:
+                failures["co2"] += 1
+
+            if point["pm25"] > pm25_limit:
+                failures["pm25"] += 1
+
+            temperature_drop = (
+                indoor_temperature - point["temperature"]
+            )
+
+            if temperature_drop > max_drop:
+                failures["temperature"] += 1
+
+    reasons = []
+
+    if failures["co2"]:
+        reasons.append(
+            f"CO₂ не достигает цели {co2_target} ppm "
+            f"в {failures['co2']} из {total_points} расчётов"
+        )
+
+    if failures["pm25"]:
+        reasons.append(
+            f"PM2.5 превышает предел {pm25_limit} мкг/м³ "
+            f"в {failures['pm25']} из {total_points} расчётов"
+        )
+
+    if failures["temperature"]:
+        reasons.append(
+            f"Охлаждение превышает {max_drop} °C "
+            f"в {failures['temperature']} из "
+            f"{total_points} расчётов"
+        )
+
+    reason = (
+        ". ".join(reasons) + "."
+        if reasons
+        else "Подходящий вариант не найден."
+    )
+
     return {
         "decision": "Подходящего сценария нет",
         "recommended_minutes": None,
-        "reason": (
-            "Ни один из рассчитанных вариантов "
-            "не удовлетворяет одновременно ограничениям "
-            "по CO₂, PM2.5 и охлаждению."
-        ),
+        "reason": reason,
         "comparisons": comparisons
     }
