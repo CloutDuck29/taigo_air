@@ -216,6 +216,12 @@
   </div>
 
   <div class="home-map-container">
+      <div id="home-wind-arrow" class="home-wind-arrow" hidden>
+  <span id="home-wind-arrow-icon" class="home-wind-arrow-icon">
+    ↑
+  </span>
+  <span id="home-wind-arrow-speed">—</span>
+</div>
     <div
       id="home-air-map"
       role="region"
@@ -253,15 +259,23 @@
     Показать все
   </button>
 
-  <p class="home-wind-impact">
-    <i data-lucide="heart-pulse"></i>
-    <span>
-      При наличии выбросов газы и частицы могут
-      переноситься ветром. Частицы способны оседать
-      на поверхностях, а загрязнённый воздух —
-      раздражать дыхательные пути.
+<details class="home-health-details">
+  <summary class="home-health-toggle">
+    <span class="home-health-heading">
+      <i data-lucide="heart-pulse"></i>
+      <span>Возможное воздействие</span>
     </span>
-  </p>
+
+    <i data-lucide="chevron-down"
+       class="home-health-chevron"></i>
+  </summary>
+
+  <div class="home-health-content">
+    <div id="home-wind-health">
+      Проверяем возможное воздействие...
+    </div>
+  </div>
+</details>
 
   <p class="home-wind-disclaimer">
     Оценка по ветру, не измерение загрязнения.

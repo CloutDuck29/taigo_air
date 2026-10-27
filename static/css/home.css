@@ -1728,3 +1728,163 @@ input[type="number"]:focus-visible {
     margin-top: 8px;
     font-size: 10px;
 }
+
+/* Вещества под названием предприятия */
+
+.home-industry-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+}
+
+.home-industry-substances {
+    display: block;
+    font-size: 11px;
+    line-height: 1.35;
+    font-weight: 400;
+    color: rgba(255,255,255,.58);
+}
+
+.home-wind-source-distance {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Стрелка ветра на карте */
+
+.home-map-container {
+    position: relative;
+}
+
+.home-wind-arrow {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 500;
+
+    display: flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 8px 11px;
+    border-radius: 12px;
+
+    background: rgba(19, 42, 57, .92);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+
+    box-shadow: 0 3px 12px rgba(0,0,0,.2);
+    pointer-events: none;
+}
+
+.home-wind-arrow[hidden] {
+    display: none;
+}
+
+.home-wind-arrow-icon {
+    display: inline-block;
+    color: #FFC247;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+}
+
+/* Воздействие веществ */
+
+#home-wind-health {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+#home-wind-health strong {
+    color: #fff;
+    font-size: 13px;
+}
+
+.home-health-row {
+    color: rgba(255,255,255,.82);
+}
+/* Раскрывающееся воздействие */
+
+.home-health-details {
+    margin-top: 12px;
+}
+
+.home-health-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    padding: 12px 14px;
+    border-radius: 15px;
+
+    background: rgba(255, 255, 255, 0.075);
+    color: #fff;
+
+    cursor: pointer;
+    list-style: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.home-health-toggle::-webkit-details-marker {
+    display: none;
+}
+
+.home-health-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.home-health-heading svg {
+    width: 19px;
+    height: 19px;
+    color: #FFC247;
+}
+
+.home-health-chevron {
+    width: 17px;
+    height: 17px;
+    color: #FFC247;
+    transition: transform .2s ease;
+}
+
+.home-health-details[open] .home-health-chevron {
+    transform: rotate(180deg);
+}
+
+.home-health-content {
+    padding: 12px 14px 4px;
+}
+
+.home-health-content #home-wind-health {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    font-size: 12px;
+    line-height: 1.5;
+    color: rgba(255,255,255,.85);
+}
+
+/* Заголовок уже есть в кнопке — не повторяем */
+.home-health-content #home-wind-health > strong {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-health-chevron {
+        transition: none;
+    }
+}

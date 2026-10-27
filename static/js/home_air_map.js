@@ -72,7 +72,9 @@ if (mapToggle) {
         }
     ).addTo(map);
 
-    const markers = L.featureGroup().addTo(map);
+    const plumes = L.layerGroup().addTo(map);
+const markers = L.featureGroup().addTo(map);
+let mapViewInitialized = false;
     // Цвета точно как на основной карте
 const industryColors = {
     "Нефтепереработка": "#f59e0b",
@@ -100,63 +102,91 @@ function getIndustryColor(industry) {
         return [newLat, newLon];
     }
 
-    function drawWindSector(source, direction) {
-        const radians = (
-            (direction + 180) % 360
-        ) * Math.PI / 180;
 
-        const left = [];
-        const right = [];
+function drawWindSector(source, direction) {
+    const lat = Number(source.latitude);
+    const lon = Number(source.longitude);
+    const distanceKm = Number(source.distance_km);
 
-        for (let distance = 300; distance <= 10000;
-             distance += 400) {
+    if (
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lon) ||
+        !Number.isFinite(distanceKm) ||
+        distanceKm <= 0
+    ) return;
 
-            const width = 0.15 * distance;
+    const angle = ((Number(direction) + 180) % 360)
+        * Math.PI / 180;
 
-            for (const [side, collection] of [
-                [-1, left],
-                [1, right]
-            ]) {
-                const lateral = side * width;
+    // Длина только для наглядности: до расстояния до дома.
+    const length = distanceKm * 1000 * 1.1;
 
-                const east =
-                    distance * Math.sin(radians) +
-                    lateral * Math.cos(radians);
+    const left = [];
+    const right = [];
 
-                const north =
-                    distance * Math.cos(radians) -
-                    lateral * Math.sin(radians);
+    for (let step = 1; step <= 20; step++) {
+        const distance = length * step / 20;
 
-                collection.push(
-                    offsetCoordinate(
-                        source.latitude,
-                        source.longitude,
-                        east,
-                        north
-                    )
-                );
-            }
+        // Узкий коридор вместо огромного треугольника.
+        const width = Math.min(550, 80 + distance * 0.09);
+
+        for (const [side, points] of [
+            [-1, left],
+            [1, right]
+        ]) {
+            const lateral = side * width;
+
+            const east =
+                distance * Math.sin(angle) +
+                lateral * Math.cos(angle);
+
+            const north =
+                distance * Math.cos(angle) -
+                lateral * Math.sin(angle);
+
+            points.push(
+                offsetCoordinate(lat, lon, east, north)
+            );
         }
+    }
 
-        L.polygon(
-            [
-                [source.latitude, source.longitude],
-                ...left,
-                ...right.reverse()
-            ],
+    const edge =
+        source.wind_analysis?.position_code === "edge";
+
+L.polygon(
+    [
+        [lat, lon],
+        ...left,
+        ...right.reverse()
+    ],
 {
-    color: "#FFC247",
+    stroke: false,
     fillColor: "#FFC247",
-    fillOpacity:
-        source.wind_analysis?.position_code === "edge"
-            ? 0.04
-            : 0.12,
-    opacity: 0.45,
-    weight: 1,
+    fillOpacity: edge ? 0.16 : 0.30,
     interactive: false
 }
-        ).addTo(markers);
+).addTo(plumes);
+}
+
+const industryPollutants = {
+    "omsk-chp-3": {
+        substances: "NO₂ · SO₂ · пыль · формальдегид",
+        note: "Перечень нормативов выбросов · 2025",
+        url: "https://e-ecolog.ru/crc/55.01.04.000.Т.000524.07.25"
+    },
+
+    "omsk-refinery": {
+        substances: "Бензол · NO₂ · SO₂ · фенол · пыль",
+        note: "Инвентаризация выбросов · 2022",
+        url: "https://e-ecolog.ru/crc/55.01.04.000.Т.000792.11.22"
+    },
+
+    "omsk-chp-4": {
+        substances: "Угольная генерация: зола, NOₓ, SOₓ",
+        note: "Типичные продукты сжигания; состав выбросов требует проверки",
+        url: "https://www.omgtu.ru/"
     }
+};
 
 /* ===== ВЫВОД О НАПРАВЛЕНИИ ВЕТРА ===== */
 
@@ -249,6 +279,20 @@ conclusion.textContent = relevantCount > 0
 
 name.textContent = source.name || "Предприятие";
 
+const info = industryPollutants[source.id];
+
+const textBlock = document.createElement("div");
+textBlock.className = "home-industry-text";
+
+textBlock.appendChild(name);
+
+if (info) {
+    const substances = document.createElement("span");
+    substances.className = "home-industry-substances";
+    substances.textContent = info.substances;
+    textBlock.appendChild(substances);
+}
+
         const distance = document.createElement("span");
         distance.className = "home-wind-source-distance";
 
@@ -262,12 +306,72 @@ name.textContent = source.name || "Предприятие";
                   })} км`
                 : "—";
 
-        card.append(name, distance);
+        card.append(textBlock, distance);
         list.appendChild(card);
+
 
         rows.push(card);
     }
+
+    const health = document.getElementById("home-wind-health");
+
+    if (health) {
+        const substances = relevant
+            .map(source => industryPollutants[source.id]?.substances || "")
+            .join(" ");
+
+        const effects = [];
+
+        if (/NO₂|SO₂|NOₓ|SOₓ/.test(substances)) {
+            effects.push(
+                "NO₂ и SO₂ — могут раздражать дыхательные пути"
+            );
+        }
+
+        if (/пыль|зола/i.test(substances)) {
+            effects.push(
+                "Пыль и зола — частицы могут оседать на поверхностях и попадать в лёгкие"
+            );
+        }
+
+        if (/бензол/i.test(substances)) {
+            effects.push(
+                "Бензол — канцероген; опасность зависит от уровня и длительности воздействия"
+            );
+        }
+
+        if (/формальдегид/i.test(substances)) {
+            effects.push(
+                "Формальдегид — может раздражать глаза и дыхательные пути"
+            );
+        }
+
+        if (/фенол/i.test(substances)) {
+            effects.push(
+                "Фенол — при достаточном воздействии раздражает глаза и дыхательные пути"
+            );
+        }
+
+        health.replaceChildren();
+
+        if (!effects.length) {
+            health.textContent =
+                "Для оценки воздействия недостаточно подтверждённых данных.";
+        } else {
+            const title = document.createElement("strong");
+            title.textContent = "Возможное воздействие";
+            health.appendChild(title);
+
+            for (const effect of effects) {
+                const row = document.createElement("div");
+                row.className = "home-health-row";
+                row.textContent = effect;
+                health.appendChild(row);
+            }
+        }
+    }
 }
+
 
     async function loadMapData() {
         status.textContent = "Обновляем направление ветра...";
@@ -294,6 +398,7 @@ name.textContent = source.name || "Предприятие";
             }
 
             markers.clearLayers();
+plumes.clearLayers();
 
             const sources = Array.isArray(industry.sources)
                 ? industry.sources
@@ -305,26 +410,51 @@ renderWindConclusion(sources, wind);
                 Number.isFinite(Number(wind.direction)) &&
                 Number.isFinite(Number(wind.speed)) &&
                 Number(wind.speed) >= 0.5;
+const arrow = document.getElementById("home-wind-arrow");
+const arrowIcon = document.getElementById("home-wind-arrow-icon");
+const arrowSpeed = document.getElementById("home-wind-arrow-speed");
 
-            for (const source of sources) {
-                if (
-                    !Number.isFinite(Number(source.latitude)) ||
-                    !Number.isFinite(Number(source.longitude))
-                ) {
-                    continue;
-                }
+if (arrow && arrowIcon && arrowSpeed) {
+    arrow.hidden = !validWind;
 
-L.circleMarker(
+    if (validWind) {
+        const toward = (Number(wind.direction) + 180) % 360;
+
+        arrowIcon.style.transform = `rotate(${toward}deg)`;
+
+        arrowSpeed.textContent =
+            `${Number(wind.speed).toFixed(1)} м/с`;
+    }
+}
+for (const source of sources) {
+    if (
+        source.latitude == null ||
+        source.longitude == null ||
+        !Number.isFinite(Number(source.latitude)) ||
+        !Number.isFinite(Number(source.longitude))
+    ) {
+        continue;
+    }
+
+    const position = source.wind_analysis?.position_code;
+
+    const relevant =
+        validWind &&
+        (position === "downwind" || position === "edge");
+
+    L.circleMarker(
     [
         Number(source.latitude),
         Number(source.longitude)
     ],
     {
-        radius: 7,
-        color: "#ffffff",
-        weight: 1.5,
-        fillColor: getIndustryColor(source.industry),
-        fillOpacity: 0.9
+radius: relevant ? 7 : 4,
+color: relevant ? "#ffffff" : "#9ca3af",
+weight: relevant ? 1.5 : 1,
+fillColor: relevant
+    ? getIndustryColor(source.industry)
+    : "#94a3b8",
+fillOpacity: relevant ? 0.95 : 0.35
     }
 )
                 .bindPopup(
@@ -334,7 +464,6 @@ L.circleMarker(
                 )
                 .addTo(markers);
 
-const position = source.wind_analysis?.position_code;
 
 if (
     validWind &&
@@ -392,22 +521,68 @@ if (
         .addTo(markers);
 }
 
-            if (markers.getLayers().length) {
-                map.fitBounds(markers.getBounds(), {
-                    padding: [20, 20],
-                    maxZoom: 11
-                });
-            }
+
+const focusPoints = [];
+
+if (
+    Number.isFinite(homeLat) &&
+    Number.isFinite(homeLon)
+) {
+    focusPoints.push([homeLat, homeLon]);
+}
+
+for (const source of sources) {
+    const position = source.wind_analysis?.position_code;
+
+    if (
+        position !== "downwind" &&
+        position !== "edge"
+    ) {
+        continue;
+    }
+
+    const lat = Number(source.latitude);
+    const lon = Number(source.longitude);
+
+    if (
+        source.latitude != null &&
+        source.longitude != null &&
+        Number.isFinite(lat) &&
+        Number.isFinite(lon)
+    ) {
+        focusPoints.push([lat, lon]);
+    }
+}
+
+if (!mapViewInitialized) {
+    if (focusPoints.length > 1) {
+        map.fitBounds(L.latLngBounds(focusPoints), {
+            padding: [50, 50],
+            maxZoom: 11,
+            animate: false
+        });
+    } else if (focusPoints.length === 1) {
+        map.setView(focusPoints[0], 11);
+    } else if (markers.getLayers().length) {
+        map.fitBounds(markers.getBounds(), {
+            padding: [40, 40],
+            maxZoom: 10,
+            animate: false
+        });
+    }
+
+    if (focusPoints.length || markers.getLayers().length) {
+        mapViewInitialized = true;
+    }
+}
+
 
             if (validWind) {
                 const toward =
                     (Number(wind.direction) + 180) % 360;
 
                 status.textContent =
-                    `Ветер ${Number(wind.speed)} м/с. ` +
-                    `Перенос в направлении ${Math.round(toward)}°. ` +
-                    "Сектора схематичны, концентрации " +
-                    "загрязнителей не рассчитаны.";
+                    `Ветер ${Number(wind.speed)} м/с. `;
             } else {
                 status.textContent =
                     "Направление переноса сейчас недоступно. " +
