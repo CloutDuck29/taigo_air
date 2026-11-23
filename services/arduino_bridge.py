@@ -13,7 +13,12 @@ _started = False
 _connection = None
 
 STALE_SECONDS = 10
+CO2_MIN = 400
+CO2_MAX = 5000
+CO2_HOLD_SECONDS = 15
 
+_last_good_co2 = None
+_last_good_co2_time = 0
 
 def find_arduino():
     configured = os.getenv("TAIGOAIR_SERIAL_PORT")
@@ -108,10 +113,15 @@ def parse_line(line, data):
                 )
 
                 # Arduino передаёт гПа,
-                # сайт использует мм рт. ст.
+
                 if key == "pressure_inside":
                     value = round(value * 0.750061683, 1)
 
+                if key == "co2":
+                    if not CO2_MIN <= value <= CO2_MAX:
+                        data["co2"] = None
+                        print(f"TaigoAir: неверный CO₂: {value}")
+                        return
                 if (
                     key == "temperature_inside"
                     and not -30 <= value <= 60
@@ -182,7 +192,12 @@ def reader():
 
                                 _last_received = time.monotonic()
 
+
                     elif line:
+
+                        if line.startswith("CO2 PWM:"):
+                            print(line)
+
                         parse_line(line, frame)
 
         except (serial.SerialException, OSError) as error:
