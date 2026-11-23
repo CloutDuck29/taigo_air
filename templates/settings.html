@@ -50,6 +50,16 @@
     <div class="notice error" role="alert">Ошибка: {{ error }}</div>
     {% endif %}
 
+  {% if not home_configured %}
+<section class="glass panel" role="alert">
+    <h2>Дом не настроен</h2>
+    <p>
+        Чтобы пользоваться TaigoAir, сначала выбери
+        дом на карте и укажи параметры комнаты.
+        До этого остальные функции недоступны.
+    </p>
+</section>
+{% endif %}
 <section class="glass panel home-settings">
 
   <div class="home-settings-heading">
@@ -180,7 +190,7 @@
   </div>
 
 </section>
-
+{% if home_configured %}
     <form method="POST" id="settings-form">
       <details class="glass panel settings-fold" open>
         <summary class="settings-fold-heading">
@@ -249,7 +259,7 @@
         <p id="settings-save-status" role="status"
    aria-live="polite" hidden></p>
 </form>
-
+{% endif %}
 
   </main>
 
@@ -281,6 +291,7 @@
       }
 
       const form = document.getElementById("settings-form");
+      if (form) {
       const target = document.getElementById("co2-target");
       const preferred = document.getElementById("co2-preferred");
 
@@ -393,7 +404,7 @@
         clearTimeout(timer);
         saveSettings();
       });
-
+}
       const scroller = document.querySelector(".app");
       if (!scroller || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 

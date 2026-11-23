@@ -271,6 +271,10 @@ applyInteractionMode();
       dirty = false;
       saveStatus.textContent = "Дом успешно сохранён.";
       mapStatus.textContent = "Расположение сохранено.";
+      if (new URLSearchParams(window.location.search).has("setup")) {
+    window.location.replace("/");
+    return;
+}
 
       wrap.hidden = true;
       toggle.setAttribute("aria-expanded", "false");

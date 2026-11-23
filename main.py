@@ -11,7 +11,10 @@ from services.arduino_bridge import (
 )
 from services.industry import get_industrial_sources
 import requests
-from flask import Flask, render_template, jsonify, request
+from flask import (
+    Flask, render_template, jsonify,
+    request, redirect, url_for
+)
 from services.geocoding import get_address
 from services.ventilation import estimate_ventilation
 from services.dispersion import calculate_plume
@@ -46,6 +49,57 @@ from services.database import (
 
 app = Flask(__name__)
 init_db()
+
+def home_is_configured():
+    home = get_home()
+
+    if home is None:
+        return False
+
+    required = (
+        "address",
+        "latitude",
+        "longitude",
+        "floor",
+        "window_direction",
+        "room_area",
+        "ceiling_height"
+    )
+
+    return all(
+        home[key] is not None
+        and home[key] != ""
+        for key in required
+    )
+
+
+@app.before_request
+def require_home_setup():
+    if home_is_configured():
+        return None
+
+    path = request.path
+    if path == "/settings" and request.method != "GET":
+        return jsonify({
+            "error": "Сначала настрой дом"
+        }), 403
+    allowed_paths = {
+        "/settings",
+        "/api/map/address",
+        "/api/map/apartment",
+        "/favicon.ico"
+    }
+
+    if path in allowed_paths or path.startswith("/static/"):
+        return None
+
+    if path.startswith("/api/"):
+        return jsonify({
+            "error": "Сначала настрой дом",
+            "setup_required": True
+        }), 403
+
+    return redirect(url_for("settings_page", setup=1))
 
 def measurement_recorder():
     while True:
@@ -715,6 +769,7 @@ def settings_page():
         "settings.html",
         settings=get_settings(),
         home=get_home(),
+        home_configured=home_is_configured(),
         saved=saved,
         error=error
     )
