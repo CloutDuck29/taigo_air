@@ -3,12 +3,10 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#10449a">
-<title>TaigoAir — Главная</title>
+<meta name="theme-color" content="#172c19">
+    <title>TaigoAir — Главная</title>
 <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
     <link
   rel="stylesheet"
@@ -48,63 +46,53 @@
 </a>
   </header>
 
-  <!-- ОКНО -->
-  <section class="glass window-card section">
+    <!-- РЕКОМЕНДАЦИЯ И УПРАВЛЕНИЕ ОКНОМ -->
+<section class="glass recommendation section">
 
-    <div class="window-image">
-      <svg viewBox="0 0 160 160"
-           fill="none"
-           stroke="currentColor"
-           stroke-width="6"
-           stroke-linecap="round"
-           stroke-linejoin="round">
-        <rect x="22" y="23" width="86" height="112" rx="9"/>
-        <path d="M40 39L82 56V135L40 113Z"/>
-        <path d="M40 39L28 49V125L82 135"/>
-        <path d="M126 60Q137 47 149 60"/>
-        <path d="M126 83Q137 70 149 83"/>
-        <path d="M126 106Q137 93 149 106"/>
-      </svg>
-    </div>
-
-    <div class="window-info">
-      <div>
-        <h2>Окно в комнате</h2>
-<div class="data-source"
-     data-sensor-source>
-  Тестовые данные
-</div>
-        <div class="subtext">
-          Датчик:
-          <strong id="window-sensor">—</strong>
+    <div class="recommendation-top">
+        <div class="recommendation-icon">
+            <i data-lucide="wind"></i>
         </div>
 
-        <div class="subtext">
-          Режим:
-          <strong id="window-mode-label">—</strong>
-        </div>
-      </div>
-<div id="window-quick-advice"
-     class="window-quick-advice"
-     data-status="loading"
-     role="status"
-     aria-live="polite">
-
-  <span class="window-quick-advice-dot"></span>
-
-  <span id="window-quick-advice-text">
-    Рассчитываем...
-  </span>
-</div>
-      <button class="window-button"
-              type="button"
-              onclick="openModal('window-modal')">
-        Управление →
-      </button>
+        <span class="section-label">
+            Рекомендация по проветриванию
+        </span>
     </div>
 
-  </section>
+    <h3 id="recommendation-decision">
+        Рассчитываем...
+    </h3>
 
+    <div class="recommendation-time"
+         id="recommendation-time">—</div>
+
+    <p class="recommendation-reason"
+       id="recommendation-reason">
+        Анализируем показатели воздуха.
+    </p>
+
+    <p class="source-note"
+       id="recommendation-source-note">
+        Расчёт использует тестовые показания датчиков.
+        Результат демонстрационный.
+    </p>
+
+<button class="window-toggle"
+        id="main-window-button"
+        type="button"
+        onclick="toggleWindowFromCard()"
+        disabled>
+
+    <span class="window-toggle-info">
+        <span class="window-toggle-caption">Положение окна</span>
+        <strong id="window-mode-label">—</strong>
+    </span>
+
+    <i data-lucide="chevron-right"></i>
+</button>
+
+
+</section>
   <!-- ОСНОВНЫЕ КАРТОЧКИ -->
   <div class="grid section">
 
@@ -311,51 +299,6 @@
 </section>
 
 
-  <!-- РЕКОМЕНДАЦИЯ -->
-  <section class="glass recommendation section">
-
-    <div class="recommendation-top">
-<div class="recommendation-icon">
-  <i data-lucide="wind"></i>
-</div>
-        <span class="section-label">
-        Рекомендация по проветриванию
-      </span>
-    </div>
-
-    <h3 id="recommendation-decision">
-      Рассчитываем...
-    </h3>
-
-    <div class="recommendation-time"
-         id="recommendation-time">—</div>
-
-    <p class="recommendation-reason"
-       id="recommendation-reason">
-      Анализируем показатели воздуха.
-    </p>
-      <p class="source-note"
-   id="recommendation-source-note">
-  Расчёт использует тестовые показания
-  датчиков. Результат демонстрационный.
-</p>
-<details class="main-outdoor-details" id="main-outdoor-details" hidden>
-  <summary class="main-outdoor-toggle">
-    <span>
-      <i data-lucide="cloud-sun"></i>
-      Наружные условия
-    </span>
-    <i data-lucide="chevron-down"></i>
-  </summary>
-
-  <div class="main-outdoor-content" id="main-outdoor-content"></div>
-</details>
-    <a href="/forecast" class="action full">
-      Подробный прогноз →
-    </a>
-
-  </section>
-
   <!-- СТАТУС УСТРОЙСТВА -->
   <button class="glass device-strip section"
           type="button"
@@ -403,54 +346,6 @@
 
 </nav>
 
-
-<!-- МОДАЛЬНОЕ ОКНО: ОКНО -->
-<div class="modal" id="window-modal">
-  <div class="modal-sheet">
-
-    <div class="modal-header">
-      <h2>Управление окном</h2>
-      <button class="close-modal" onclick="closeModal()">×</button>
-    </div>
-      <p class="source-note" data-sensor-note>
-  Физический датчик окна пока не подключён.
-</p>
-
-    <div class="detail-row">
-      <span>Состояние датчика</span>
-      <strong id="detail-window-sensor">—</strong>
-    </div>
-
-    <div class="detail-row">
-      <span>Текущий режим</span>
-      <strong id="detail-window-mode">—</strong>
-    </div>
-
-    <div class="detail-section">Выбор режима</div>
-
-    <select id="window-mode-select" class="mode-select">
-      <option value="closed">Закрыто</option>
-      <option value="micro">Микропроветривание</option>
-      <option value="tilt">Откинуто</option>
-      <option value="open">Распахнуто</option>
-    </select>
-
-    <button class="action primary full"
-            onclick="saveWindowMode()">
-      Сохранить режим
-    </button>
-
-    <p id="window-save-status" class="modal-note"
-       aria-live="polite"></p>
-    <p id="window-warning" class="modal-note"></p>
-
-    <p class="modal-note">
-      Выбранное положение окна используется
-      в расчёте проветривания. Физическое
-      управление окном не выполняется.
-    </p>
-  </div>
-</div>
 
 <!-- МОДАЛЬНОЕ ОКНО: КАЧЕСТВО ВОЗДУХА -->
 <div class="modal" id="air-modal">
@@ -611,42 +506,19 @@
 
     <div class="detail-section">В помещении</div>
 <p class="source-note" data-sensor-note>
-  Температура, влажность и давление
-  в помещении пока симулируются.
+  Показания внутренних датчиков тестовые.
 </p>
     <div class="detail-row">
       <span>Температура</span>
       <strong id="detail-temp-inside">—</strong>
     </div>
     <div class="detail-row">
-      <span>Влажность</span>
-      <strong id="detail-humidity-inside">—</strong>
-    </div>
-    <div class="detail-row">
       <span>Давление</span>
       <strong id="detail-pressure-inside">—</strong>
     </div>
 
-<div class="detail-section"
-     id="outside-sensors-heading">
-  Наружные датчики · тестовые
-</div>
-    <div class="detail-row">
-      <span>Температура</span>
-      <strong id="detail-temp-outside">—</strong>
-    </div>
-    <div class="detail-row">
-      <span>Влажность</span>
-      <strong id="detail-humidity-outside">—</strong>
-    </div>
-    <div class="detail-row">
-      <span>Давление</span>
-      <strong id="detail-pressure-outside">—</strong>
-    </div>
-
-
 <div class="detail-section">
-  Погодная модель · Open-Meteo
+  На улице · Open-Meteo
 </div>
 
 <div class="detail-row">
@@ -721,9 +593,7 @@
       рассчитывает сценарии проветривания.
     </p>
 
-<a href="/forecast" class="action full co2-forecast-link">
-      Посмотреть прогноз →
-    </a>
+
   </div>
 </div>
 
@@ -839,8 +709,6 @@ const state = {
 
 const windowLabels = {
   closed:"Закрыто",
-  micro:"Микропроветривание",
-  tilt:"Откинуто",
   open:"Распахнуто"
 };
 
@@ -1329,17 +1197,8 @@ highlightAirValue(
 
     put("detail-temp-inside",
       value(d.temperature_inside," °C"));
-    put("detail-humidity-inside",
-      value(d.humidity_inside," %"));
     put("detail-pressure-inside",
       value(d.pressure_inside," мм рт. ст."));
-
-    put("detail-temp-outside",
-      value(d.temperature_outside," °C"));
-    put("detail-humidity-outside",
-      value(d.humidity_outside," %"));
-    put("detail-pressure-outside",
-      value(d.pressure_outside," мм рт. ст."));
 
 const windowState =
   typeof d.window_open === "boolean"
@@ -1375,13 +1234,6 @@ document.querySelectorAll(
   element.hidden = !simulation;
 });
 
-put(
-  "outside-sensors-heading",
-  simulation
-    ? "Наружные датчики · тестовые"
-    : "Наружные датчики"
-);
-
 const recommendationNote = $(
   "recommendation-source-note"
 );
@@ -1409,10 +1261,6 @@ updateAirWarnings();
 
 $("device-dot").style.background =
   simulation ? "#ffbd17" : "#8ab4ff";
-
-
-    updateWindowWarning();
-
 } catch(error) {
   state.sensors = null;
   highlightAirValue("air-co2", null, CO2_LIMIT);
@@ -1428,11 +1276,7 @@ highlightAirValue("air-indoor-pm25", null, PM25_LIMIT);
     "detail-co2", "detail-pm1",
     "detail-pm25", "detail-pm10",
     "detail-temp-inside",
-    "detail-humidity-inside",
     "detail-pressure-inside",
-    "detail-temp-outside",
-    "detail-humidity-outside",
-    "detail-pressure-outside",
     "window-sensor",
     "detail-window-sensor",
     "detail-device-window",
@@ -1575,306 +1419,170 @@ highlightAirValue("detail-aqi", null, 60);
 }
 
 /* Режим окна */
-
 async function refreshWindowMode() {
-  try {
-    const d=await api("/api/window-mode");
+    try {
+        const d = await api("/api/window-mode");
 
-    state.windowMode=d.window_mode;
+        state.windowMode = d.window_mode;
 
-    const label=windowLabels[d.window_mode]
-      || "Не определено";
+        updateMainWindowButton();
 
-    put("window-mode-label",label);
-    put("detail-window-mode",label);
+    } catch (error) {
+        state.windowMode = null;
 
-    if(windowLabels[d.window_mode]) {
-      $("window-mode-select").value=d.window_mode;
+        put("window-mode-label", "Не настроено");
+        put("main-window-status", error.message);
+
+        updateMainWindowButton();
+
+        console.error("Window mode:", error);
     }
-
-    updateWindowWarning();
-
-  } catch(error) {
-    put("window-mode-label","Не настроено");
-    put("window-save-status",error.message);
-  }
 }
+function updateMainWindowButton() {
+    const button = $("main-window-button");
+    if (!button) return;
 
-function updateWindowWarning() {
-  const d=state.sensors;
-  const mode=state.windowMode;
+    const mode = state.windowMode;
 
-  if(!d || !mode) return;
-if (typeof d.window_open !== "boolean") {
-  put("window-warning",
-    "Состояние датчика окна неизвестно.");
-  return;
+    put(
+        "window-mode-label",
+        mode === "open" ? "Распахнуто" :
+        mode === "closed" ? "Закрыто" : "Не определено"
+    );
+
+    button.disabled = mode !== "open" && mode !== "closed";
+
+    button.setAttribute(
+        "aria-label",
+        mode === "open"
+            ? "Распахнуто. Нажмите, чтобы закрыть окно"
+            : mode === "closed"
+                ? "Закрыто. Нажмите, чтобы открыть окно"
+                : "Положение окна неизвестно"
+    );
 }
-  if(mode==="closed" && d.window_open) {
-    put("window-warning",
-      "Датчик показывает открытое окно, " +
-      "но выбран режим «Закрыто».");
-  } else if(mode!=="closed" && !d.window_open) {
-    put("window-warning",
-      "Окно по датчику закрыто. " +
-      "Выбранный режим используется для прогноза.");
-  } else {
-    put("window-warning",
-      "Состояние датчика соответствует сценарию.");
-  }
-}
+async function toggleWindowFromCard() {
+    const button = $("main-window-button");
+    const status = {
+    set textContent(message) {
+        if (message && message !== "Отправляем команду..." &&
+            !message.startsWith("Команда отправлена")) {
+            alert(message);
+        }
+    }
+};
 
-async function saveWindowMode() {
-  const select=$("window-mode-select");
-  const button=document.querySelector(
-    "#window-modal .action.primary"
-  );
+    if (!button || button.disabled) return;
 
-  const previous=state.windowMode;
+    const previousMode = state.windowMode;
+    const nextMode = previousMode === "open" ? "closed" : "open";
 
-  button.disabled=true;
-  put("window-save-status","Сохраняем...");
+    button.disabled = true;
+    status.textContent = "Отправляем команду...";
 
-  try {
-    await api("/api/window-mode",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({
-        window_mode:select.value
-      })
-    });
+    try {
+        await api("/api/window/control", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                action: nextMode === "open" ? "open" : "close"
+            })
+        });
 
-    state.windowMode=select.value;
-    await refreshWindowMode();
-    await refreshRecommendation();
+        await api("/api/window-mode", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                window_mode: nextMode
+            })
+        });
 
-    put("window-save-status","Режим сохранён");
+        state.windowMode = nextMode;
 
-  } catch(error) {
-    select.value=previous || "closed";
-    put("window-save-status",error.message);
-  } finally {
-    button.disabled=false;
-  }
+        put("detail-window-mode", windowLabels[nextMode]);
+
+        status.textContent =
+            "Команда отправлена. Проверь положение окна.";
+
+        await refreshRecommendation();
+
+    } catch (error) {
+        status.textContent = error.message;
+
+        try {
+            await refreshWindowMode();
+        } catch (refreshError) {
+            console.error(refreshError);
+        }
+    } finally {
+        updateMainWindowButton();
+    }
 }
 
 /* Рекомендация */
 
 
-function renderMainOutdoorContext(context) {
-    const details = document.getElementById(
-        "main-outdoor-details"
-    );
-
-    const content = document.getElementById(
-        "main-outdoor-content"
-    );
-
-    if (!details || !content) return;
-
-    if (!context) {
-        details.hidden = true;
-        details.open = false;
-        content.replaceChildren();
-        return;
-    }
-
-    details.hidden = false;
-    content.replaceChildren();
-
-    const addRow = (label, value) => {
-        const row = document.createElement("div");
-        row.className = "main-outdoor-row";
-
-        const name = document.createElement("span");
-        name.textContent = label;
-
-        const result = document.createElement("strong");
-        result.textContent = value;
-
-        row.append(name, result);
-        content.appendChild(row);
-    };
-
-    const formatNumber = (value, digits = 0) =>
-        value == null || !Number.isFinite(Number(value))
-            ? "—"
-            : Number(value).toLocaleString("ru-RU", {
-                maximumFractionDigits: digits
-            });
-
-    addRow(
-        "PM2.5 снаружи",
-        `${formatNumber(context.pm25, 1)} мкг/м³`
-    );
-
-    addRow(
-        "EU AQI",
-        formatNumber(context.aqi)
-    );
-
-    addRow(
-        "Предприятия по ветру",
-        context.industry_status === "ok"
-            ? String(context.industry_count ?? 0)
-            : "Нет данных"
-    );
-
-    if (context.pm25_comparison === "higher") {
-        addRow(
-            "Сравнение PM2.5",
-            "Снаружи выше"
-        );
-    } else if (
-        context.pm25_comparison === "not_higher"
-    ) {
-        addRow(
-            "Сравнение PM2.5",
-            "Снаружи не выше"
-        );
-    }
-
-    const note = document.createElement("p");
-    note.className = "main-outdoor-note";
-    note.textContent =
-        "Промышленный перенос определяется по ветру. " +
-        "Это не измерение загрязнения у дома.";
-
-    content.appendChild(note);
-}
-
-
-
-function updateWindowQuickAdvice(data) {
-  const box = document.getElementById("window-quick-advice");
-  const text = document.getElementById("window-quick-advice-text");
-
-  if (!box || !text) return;
-
-  const recommendation = data?.recommendation || {};
-  const decision = recommendation.decision || "";
-
-  const recommended = recommendation.recommended_minutes;
-  const possible = recommendation.possible_minutes;
-  const minutes = recommended ?? possible;
-
-  const sensorOpen = state.sensors?.window_open;
-  const isSimulation = state.sensors?.mode !== "hardware";
-
-  let message = "Нет данных для расчёта";
-  let status = "neutral";
-
-  if (decision === "Проветривание не требуется") {
-    message = "Проветривание не требуется";
-    status = "good";
-
-  } else if (data?.status === "closed") {
-    message = "Выбери режим проветривания";
-    status = "neutral";
-
-  } else if (
-    minutes != null &&
-    Number.isFinite(Number(minutes)) &&
-    Number(minutes) > 0
-  ) {
-    const approximate = possible != null &&
-                        recommended == null;
-
-    const duration = approximate
-      ? `~${minutes} мин`
-      : `${minutes} мин`;
-
-    const action = isSimulation
-      ? "По модели: проветрить"
-      : sensorOpen === true
-        ? "Проветривать"
-        : sensorOpen === false
-          ? "Открыть окно"
-          : "Проветрить";
-
-    message = `${action} · ${duration}`;
-    status = "action";
-
-  } else if (decision === "Подходящего сценария нет") {
-    message = "Цель за 20 мин не достигнута";
-    status = "warning";
-  }
-
-  text.textContent = message;
-  box.dataset.status = status;
-}
-
 async function refreshRecommendation() {
-  try {
-    const d = await api("/api/forecast/scenarios");
-    state.forecast = d;
-renderMainOutdoorContext(
-    d.status === "closed"
-        ? null
-        : d.outdoor_context
-);
-    const r = d.recommendation || {};
-    const decision = r.decision || "";
+    try {
+        const d = await api("/api/forecast/scenarios");
+        state.forecast = d;
 
-    let title = decision || "Рекомендация недоступна";
-    let explanation = r.reason ||
-      "Нет подробностей расчёта.";
+        const r = d.recommendation || {};
+        const decision = r.decision || "";
+        const isOpen = (d.window_mode || state.windowMode) === "open";
+        const minutes = r.recommended_minutes ?? r.possible_minutes;
+        const validMinutes = minutes != null &&
+            Number.isFinite(Number(minutes)) && Number(minutes) > 0;
+        const approximate = r.recommended_minutes == null;
 
-    let duration = "—";
+        let title = decision || "Рекомендация недоступна";
+        let explanation = r.reason || "Нет подробностей расчёта.";
+        let duration = "";
 
-    if (r.recommended_minutes != null) {
-      duration = Number(r.recommended_minutes) === 0
-        ? "Не требуется"
-        : `${r.recommended_minutes} минут`;
+        if (decision === "Проветривание не требуется") {
+            title = isOpen
+                ? "Проветривание можно завершить"
+                : "Проветривание не требуется";
+            explanation = "CO₂ и PM2.5 сейчас в пределах заданных порогов.";
+        } else if (decision === "Подходящего сценария нет") {
+            title = isOpen
+                ? "Проветривание идёт"
+                : "Время проветривания не определено";
+            explanation = isOpen
+                ? "Подходящая длительность не найдена. Проверь температуру и наружный воздух."
+                : "По текущим условиям подходящая длительность не найдена.";
+        } else if (decision === "Условное проветривание" && validMinutes) {
+            title = isOpen
+                ? `Можно продолжить примерно ${minutes} мин`
+                : `Можно проветрить примерно ${minutes} мин`;
+            explanation = "Ориентир от текущего момента, не таймер. CO₂ может снизиться, но помещение может заметно охладиться.";
+        } else if (validMinutes) {
+            const timeLabel = `${approximate ? "примерно " : ""}${minutes} мин`;
+            title = isOpen
+                ? `Можно продолжить ${timeLabel}`
+                : `Можно проветрить ${timeLabel}`;
+            explanation = approximate
+                ? "Время ориентировочное и зависит от фактического воздухообмена. Отсчёт от текущего момента."
+                : "Расчётная длительность от текущего момента. Фактический воздухообмен пока не измерен.";
+        } else if (isOpen) {
+            title = "Проветривание идёт";
+            explanation = r.reason || "Пока нельзя определить подходящую длительность.";
+        }
 
-    } else if (r.possible_minutes != null) {
-      duration = `${r.possible_minutes} минут`;
+        put("recommendation-decision", title);
+        put("recommendation-time", duration);
+        put("recommendation-reason", explanation);
+    } catch (error) {
+        state.forecast = null;
+        put("recommendation-decision", "Не удалось рассчитать прогноз");
+        put("recommendation-time", "");
+        put("recommendation-reason", error.message);
+        console.error("Forecast:", error);
     }
-
-
-if (decision === "Подходящего сценария нет") {
-  title = "Подходящий сценарий не найден";
-  duration = "Время не определено";
-
-  explanation = r.reason ||
-    "Ни один из рассчитанных вариантов не подходит.";
-}
-
-
-    if (decision === "Проветривание не требуется") {
-      title = "Проветривание не требуется";
-      duration = "Сейчас";
-      explanation =
-        "Показатели находятся в пределах " +
-        "установленных порогов.";
-    }
-
-    if (decision === "Есть превышение заданных порогов") {
-      title = "Есть превышение показателей";
-      duration = "Нужен расчёт";
-      explanation =
-        "Выберите режим открытия окна, чтобы " +
-        "оценить варианты проветривания.";
-    }
-
-    put("recommendation-decision", title);
-    put("recommendation-time", duration);
-    put("recommendation-reason", explanation);
-    updateWindowQuickAdvice(d);
-
-} catch (error) {
-    state.forecast = null;
-    renderMainOutdoorContext(null);
-    updateWindowQuickAdvice(null);
-
-    put("recommendation-decision",
-      "Не удалось рассчитать прогноз");
-
-    put("recommendation-time", "—");
-
-    put("recommendation-reason",
-      error.message);
-  }
 }
 
 /* Загрузка и автообновление */
@@ -1898,7 +1606,7 @@ function initCardAnimations() {
 
   const cards = [
     ...document.querySelectorAll(
-      ".window-card, .grid .tile, .recommendation, .device-strip"
+      ".recommendation, .grid .tile, .device-strip"
     )
   ];
 

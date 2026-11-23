@@ -1,4 +1,4 @@
-
+from services.arduino_bridge import get_hardware_data
 from datetime import datetime
 
 # Тестовые показания КОТОРЫЕ В ДАЛЬНЕЙШЕМ БУДУТ БРАТЬСЯ ИЗ ДАТЧИКОВ
@@ -23,13 +23,43 @@ sensor_data = {
 }
 
 
+
 def get_sensor_data():
-    return {
-        **sensor_data,
-        "timestamp": datetime.now().strftime(
-            "%d.%m.%Y %H:%M:%S"
-        )
-    }
+    hardware = get_hardware_data()
+
+    if hardware is not None:
+        data = {
+            "mode": "hardware",
+            "connected": True,
+            "co2": None,
+            "pm1": None,
+            "pm25": None,
+            "pm10": None,
+            "temperature_inside": None,
+            "temperature_outside": None,
+            "humidity_inside": None,
+            "humidity_outside": None,
+            "pressure_inside": None,
+            "pressure_outside": None,
+            "window_open": None,
+            "fan_on": None,
+        }
+
+        data.update(hardware)
+
+    else:
+        data = {
+            **sensor_data,
+            "mode": "simulation",
+            "connected": False,
+        }
+
+    data["timestamp"] = datetime.now().strftime(
+        "%d.%m.%Y %H:%M:%S"
+    )
+
+    return data
+
 
 
 def update_sensor_data(values):

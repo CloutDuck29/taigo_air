@@ -51,6 +51,7 @@ def get_air_quality():
             "nitrogen_dioxide",
             "sulphur_dioxide",
             "carbon_monoxide",
+            "carbon_dioxide",
             "ozone",
             "european_aqi"
         ]),
@@ -79,6 +80,7 @@ def get_air_quality():
             "no2": current.get("nitrogen_dioxide"),
             "so2": current.get("sulphur_dioxide"),
             "co": current.get("carbon_monoxide"),
+            "co2": current.get("carbon_dioxide"),
             "o3": current.get("ozone"),
             "aqi": current.get("european_aqi"),
             "timestamp": current.get("time")

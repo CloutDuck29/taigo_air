@@ -40,39 +40,34 @@ select:focus-visible {
 
 
 
-
-
 .background {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  overflow: hidden;
-
-  background: #10449a;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+    background: #10449a;
 }
 
 .background::before {
-  content: "";
-  position: absolute;
-  inset: -20px;
+    content: "";
+    position: absolute;
+    inset: -20px;
 
-  background-image:
-    linear-gradient(
-      180deg,
-      rgba(10, 23, 38, 0.22) 0%,
-      rgba(14, 29, 39, 0.17) 55%,
-      rgba(12, 23, 18, 0.27) 100%
-    ),
-    url("/static/images/landscape.jpg");
+    background-image:
+        linear-gradient(
+            180deg,
+            rgba(10, 23, 38, 0.22) 0%,
+            rgba(14, 29, 39, 0.17) 55%,
+            rgba(12, 23, 18, 0.27) 100%
+        ),
+        url("/static/images/landscape.jpg");
 
-  background-position: center top;
-  background-size: 100% 100%;
-  background-repeat: no-repeat;
-
-  filter: blur(5px);
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    filter: blur(5px);
 }
-
 /* Мягкий переход под системной строкой iPhone */
 .background::after {
   content: "";
@@ -876,17 +871,15 @@ backdrop-filter: blur(30px) saturate(100%);
     .device-strip.scroll-wheel-card {
   transition: transform 0.25s cubic-bezier(.22, 1, .36, 1);
 }
-
 html {
-  min-height: 100%;
-  background: #10449a;
+    min-height: 100%;
+    background: #172c19;
 }
 
 body {
-  min-height: 100dvh;
-  background: transparent;
+    min-height: 100dvh;
+    background: transparent;
 }
-
 
     /* Источники данных */
 
@@ -2373,4 +2366,55 @@ input[type="number"]:focus-visible {
 
 .window-quick-advice-icon {
     display: none;
+}
+
+.window-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+
+    width: 100%;
+    padding: 17px 19px;
+
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 18px;
+    background: rgba(255, 255, 255, .09);
+    color: white;
+
+    text-align: left;
+    cursor: pointer;
+    transition: background .2s, transform .2s;
+}
+
+.window-toggle-info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.window-toggle-caption {
+    color: rgba(255, 255, 255, .65);
+    font-size: 12px;
+}
+
+.window-toggle strong {
+    font-size: 20px;
+    color: #FFC247;
+}
+
+.window-toggle svg {
+    width: 21px;
+    height: 21px;
+    color: #FFC247;
+}
+
+.window-toggle:active:not(:disabled) {
+    transform: scale(.98);
+    background: rgba(255, 255, 255, .15);
+}
+
+.window-toggle:disabled {
+    opacity: .6;
+    cursor: default;
 }

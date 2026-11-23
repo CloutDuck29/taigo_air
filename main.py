@@ -1,7 +1,14 @@
 import csv
 import io
 import json
+import threading
+import time
 from flask import Response
+from services.arduino_bridge import (
+    start_arduino_reader,
+    get_hardware_data,
+    send_arduino_command,
+)
 from services.industry import get_industrial_sources
 import requests
 from flask import Flask, render_template, jsonify, request
@@ -22,6 +29,7 @@ from services.database import (
     init_db,
     save_measurement,
     get_measurements,
+    get_measurements_after,
     get_home,
     save_home,
     save_forecast_run,
@@ -35,10 +43,31 @@ from services.database import (
     set_window_mode
 )
 
+
 app = Flask(__name__)
 init_db()
 
+def measurement_recorder():
+    while True:
+        try:
+            data = get_sensor_data()
 
+            if (
+                data.get("mode") == "hardware"
+                and data.get("connected") is True
+                and any(
+                    data.get(key) is not None
+                    for key in ("co2", "pm25", "temperature_inside")
+                )
+            ):
+                save_measurement(data)
+
+        except Exception:
+            app.logger.exception(
+                "Ошибка автоматического сохранения измерений"
+            )
+
+        time.sleep(30)
 @app.route("/forecast/history")
 def forecast_history():
     runs = get_forecast_runs(limit=100)
@@ -181,14 +210,22 @@ def forecast_api():
             room_area=float(home["room_area"]),
             ceiling_height=float(home["ceiling_height"]),
             air_changes_per_hour=ach,
-            outdoor_co2=settings["outdoor_co2"]
+            outdoor_co2=(
+                float(air["co2"])
+                if air.get("co2") is not None
+                else float(settings["outdoor_co2"])
+            )
         )
 
         forecast["input_sources"] = {
             "indoor": sensors.get("mode"),
             "outdoor_pm25": "Open-Meteo Air Quality",
             "outdoor_temperature": "Open-Meteo Weather",
-            "outdoor_co2": f"Предполагаемый наружный CO₂: {settings['outdoor_co2']:g} ppm"
+            "outdoor_co2": (
+    "Open-Meteo / CAMS, модельный CO₂"
+    if air.get("co2") is not None
+    else "Резервное предполагаемое значение CO₂"
+)
         }
 
 
@@ -243,6 +280,49 @@ def index():
     )
 
 
+@app.route("/api/window/control", methods=["POST"])
+def window_control_api():
+    data = request.get_json(silent=True)
+
+    if not isinstance(data, dict):
+        return jsonify({
+            "error": "Ожидается JSON с командой"
+        }), 400
+
+    action = data.get("action")
+
+    commands = {
+        "open": "WINDOW_OPEN",
+        "close": "WINDOW_CLOSE",
+    }
+
+    if action not in commands:
+        return jsonify({
+            "error": "Допустимые действия: open, close"
+        }), 400
+
+    # Проверяем, что есть свежие данные Arduino
+    hardware = get_hardware_data()
+
+    if hardware is None:
+        return jsonify({
+            "error": "Arduino не подключена или данные устарели"
+        }), 503
+
+    success = send_arduino_command(commands[action])
+
+    if not success:
+        return jsonify({
+            "error": "Не удалось отправить команду Arduino"
+        }), 503
+
+    return jsonify({
+        "status": "sent",
+        "action": action,
+        "message": "Команда передана Arduino"
+    }), 202
+
+
 @app.route("/api/sensors")
 def sensors_api():
     return jsonify(get_sensor_data())
@@ -287,12 +367,32 @@ def simulation_api():
 
 @app.route("/history")
 def history():
-    measurements = get_measurements(limit=5000)
+    measurements = get_measurements(limit=50000)
+
     return render_template(
         "history.html",
         measurements=measurements
     )
 
+@app.route("/api/history")
+def history_api():
+    try:
+        last_id = int(request.args.get("after_id", 0))
+
+        if last_id < 0:
+            raise ValueError
+
+    except (ValueError, TypeError):
+        return jsonify({
+            "error": "Некорректный ID измерения"
+        }), 400
+
+    measurements = get_measurements_after(last_id)
+
+    return jsonify({
+        "status": "ok",
+        "measurements": measurements
+    })
 
 @app.route("/api/weather")
 def weather_api():
@@ -1069,73 +1169,6 @@ def forecast_scenarios_api():
 
     sensors = get_sensor_data()
 
-
-    if home.get("window_mode", "closed") == "closed":
-        indoor_co2 = sensors.get("co2")
-        indoor_pm25 = sensors.get("pm25")
-
-        if indoor_co2 is None or indoor_pm25 is None:
-            recommendation = {
-                "decision": "Недостаточно данных",
-                "recommended_minutes": None,
-                "reason": (
-                    "Не удалось получить текущие показатели "
-                    "CO₂ и PM2.5."
-                )
-            }
-        else:
-            co2_target = float(
-                settings.get("co2_target", 1000)
-            )
-            pm25_limit = float(
-                settings.get("pm25_limit", 35)
-            )
-
-            co2_exceeded = (
-                float(indoor_co2) > co2_target
-            )
-            pm25_exceeded = (
-                float(indoor_pm25) > pm25_limit
-            )
-
-            if co2_exceeded or pm25_exceeded:
-                recommendation = {
-                    "decision": "Есть превышение заданных порогов",
-                    "recommended_minutes": None,
-                    "reason": (
-                        "Один или несколько показателей "
-                        "превышают заданные пороги. "
-                        "Выбери режим открытия окна, "
-                        "чтобы оценить варианты проветривания "
-                        "с учётом наружного воздуха."
-                    )
-                }
-            else:
-                recommendation = {
-                    "decision": "Проветривание не требуется",
-                    "recommended_minutes": 0,
-                    "reason": (
-                        "CO₂ и PM2.5 находятся в пределах "
-                        "заданных порогов. По этим двум "
-                        "критериям проветривание сейчас "
-                        "не требуется."
-                    )
-                }
-
-        return jsonify({
-            "status": "closed",
-            "window_mode": "closed",
-            "window_label": "Закрыто",
-            "message": "Режим проветривания не выбран.",
-            "recommendation": recommendation,
-            "scenarios": [],
-            "calibrated": False
-        })
-
-    # Наружные данные запрашиваем только тогда,
-    # когда выбран режим проветривания.
-
-
     try:
         air = get_air_quality()
         weather = get_weather()
@@ -1169,7 +1202,7 @@ def forecast_scenarios_api():
 
     try:
         ventilation = estimate_ventilation(
-            window_mode=home.get("window_mode", "closed"),
+            window_mode="open",
             window_direction=home["window_direction"],
             wind_direction=weather.get("wind_direction"),
             wind_speed=weather.get("wind_speed"),
@@ -1215,7 +1248,11 @@ def forecast_scenarios_api():
                 room_area=float(home["room_area"]),
                 ceiling_height=float(home["ceiling_height"]),
                 air_changes_per_hour=ach,
-                outdoor_co2=settings["outdoor_co2"]
+                outdoor_co2=(
+                    float(air["co2"])
+                    if air.get("co2") is not None
+                    else float(settings["outdoor_co2"])
+                )
             )
 
             scenarios.append({
@@ -1304,8 +1341,13 @@ def forecast_scenarios_api():
 
         return jsonify({
             "status": "ok",
-            "window_mode": ventilation["window_mode"],
-            "window_label": ventilation["window_label"],
+            "window_mode": home.get("window_mode", "closed"),
+            "window_label": (
+                "Распахнуто"
+                if home.get("window_mode") == "open"
+                else "Закрыто"
+            ),
+            "forecast_window_mode": "open",
             "wind_exposure": ventilation["wind_exposure"],
             "calibrated": False,
             "scenarios": scenarios,
@@ -1321,8 +1363,16 @@ def forecast_scenarios_api():
 
 
 if __name__ == "__main__":
+    start_arduino_reader()
+
+    threading.Thread(
+        target=measurement_recorder,
+        daemon=True
+    ).start()
+
     app.run(
         host="0.0.0.0",
-        port=5000,
-        debug=True
+        port=5001,
+        debug=False,
+        use_reloader=False
     )

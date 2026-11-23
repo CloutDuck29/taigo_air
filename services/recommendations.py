@@ -29,23 +29,51 @@ def get_recommendation(
 
 
     results = forecast["results"]
+    outdoor_warnings = []
 
-    # Если наружный воздух грязнее внутреннего
     if outdoor_pm25 > indoor_pm25:
-        if indoor_co2 <= CO2_TARGET:
-            return {
-                "decision": "Подождать",
-                "recommended_minutes": 0,
-                "reason": (
-                    "CO₂ не превышает заданный порог, "
-                    "а наружная PM2.5 выше внутренней. "
-                    "Проветривание может увеличить "
-                    "концентрацию частиц."
-                ),
-                "warnings": [
-                    "Наружная PM2.5 выше внутренней"
-                ]
-            }
+        outdoor_warnings.append(
+            "PM2.5 снаружи выше, чем внутри. "
+            "При проветривании концентрация частиц "
+            "может увеличиться."
+        )
+
+    if outdoor_pm25 > PM25_LIMIT:
+        outdoor_warnings.append(
+            "PM2.5 снаружи превышает заданный порог."
+        )
+    # Если показатели в пределах нормы,
+    # проветривание по ним не требуется.
+    if indoor_co2 <= CO2_TARGET and indoor_pm25 <= PM25_LIMIT:
+        return {
+            "decision": "Проветривание не требуется",
+            "recommended_minutes": 0,
+            "reason": (
+                "CO₂ и PM2.5 находятся в пределах "
+                "заданных порогов. Проветривание "
+                "по этим показателям сейчас не требуется."
+            ),
+            "warnings": []
+        }
+    # CO2 в норме, но PM2.5 превышает порог
+    if indoor_co2 <= CO2_TARGET and indoor_pm25 > PM25_LIMIT:
+        return {
+            "decision": "Подходящего сценария нет",
+            "recommended_minutes": None,
+            "reason": (
+                f"CO₂ в пределах нормы, но PM2.5 "
+                f"составляет {indoor_pm25} мкг/м³ "
+                f"при заданном пределе {PM25_LIMIT} мкг/м³. "
+                "Среди рассчитанных вариантов нет "
+                "проветривания, удовлетворяющего "
+                "ограничениям по загрязнению "
+                "и охлаждению."
+            ),
+            "warnings": [
+                "PM2.5 внутри превышает заданный порог",
+                "Проверь наружное загрязнение"
+            ]
+        }
 
     candidates = []
 
@@ -80,7 +108,7 @@ def get_recommendation(
                 "Охлаждение укладывается "
                 "в заданное ограничение."
             ),
-            "warnings": []
+            "warnings": outdoor_warnings
         }
 
     # Если CO2 нормальный, а подходящих
@@ -112,7 +140,7 @@ def get_recommendation(
             "всем ограничениям по CO₂, "
             "PM2.5 и охлаждению."
         ),
-        "warnings": [
+                "warnings": outdoor_warnings + [
             "Проверь температуру и наружное загрязнение",
             "Рассмотри более короткое проветривание "
             "или другой момент времени"
@@ -230,7 +258,58 @@ def get_scenario_recommendation(scenarios, indoor_co2,
             ),
             "comparisons": comparisons
         }
+    # Условный вариант, если ни один сценарий
+    # не удовлетворяет всем ограничениям.
 
+    first_minutes = min(common_minutes) if common_minutes else None
+
+    if first_minutes is not None:
+        first_points = [
+            next(
+                point for point in scenario["results"]
+                if point["minutes"] == first_minutes
+            )
+            for scenario in scenarios
+        ]
+
+        # Есть ли улучшение CO2 хотя бы в одном сценарии?
+        co2_improves = any(
+            point["co2"] < indoor_co2
+            for point in first_points
+        )
+
+        # Не допускаем условной рекомендации,
+        # если прогнозируется превышение PM2.5.
+        pm25_acceptable = all(
+            point["pm25"] <= pm25_limit
+            for point in first_points
+        )
+
+        # Проверяем, что наружная концентрация
+        # частиц не выше внутренней.
+        outdoor_acceptable = outdoor_pm25 <= indoor_pm25
+
+        if co2_improves and pm25_acceptable and outdoor_acceptable:
+            return {
+                "decision": "Условное проветривание",
+                "recommended_minutes": None,
+                "possible_minutes": first_minutes,
+                "reason": (
+                    f"Можно рассмотреть проветривание "
+                    f"на {first_minutes} минут. "
+                    "CO₂ по модели будет снижаться, "
+                    "но допустимое охлаждение "
+                    "или целевая концентрация CO₂ "
+                    "могут быть не достигнуты."
+                ),
+                "warnings": [
+                    "Время условное, воздухообмен не измерен",
+                    "Возможно охлаждение выше заданного предела",
+                    "Прогноз температуры не учитывает "
+                    "отопление и тепловую инерцию помещения"
+                ],
+                "comparisons": comparisons
+            }
     failures = {
         "co2": 0,
         "pm25": 0,

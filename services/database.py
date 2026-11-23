@@ -174,6 +174,16 @@ def get_measurements(limit=100):
 
     return [dict(row) for row in rows]
 
+def get_measurements_after(last_id):
+    with get_connection() as connection:
+        rows = connection.execute("""
+            SELECT *
+            FROM measurements
+            WHERE id > ?
+            ORDER BY id ASC
+        """, (last_id,)).fetchall()
+
+    return [dict(row) for row in rows]
 
 def get_home():
     with get_connection() as connection:

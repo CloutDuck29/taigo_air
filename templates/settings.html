@@ -235,36 +235,17 @@
         </div>
       </details>
 
-      <details class="glass panel settings-fold" >
-        <summary class="settings-fold-heading">
-          <span class="settings-fold-title"><i data-lucide="sliders-horizontal"></i> Параметры модели</span>
-          <i data-lucide="chevron-down" class="settings-fold-chevron"></i>
-        </summary>
-        <div class="settings-fold-content">
-        <label class="field" for="outdoor-co2">
-          <span class="field-label">Предполагаемый наружный CO₂</span>
-          <span class="field-help">Условное значение, используемое в расчётах; не показание датчика.</span>
-          <span class="input-row">
-            <input class="setting-input" id="outdoor-co2" type="number" name="outdoor_co2" inputmode="decimal" min="300" max="2000" step="1" required value="{{ settings.outdoor_co2 }}">
-            <span class="unit">ppm</span>
-          </span>
-        </label>
+        <!-- Служебные параметры модели -->
+<input
+    type="hidden"
+    name="outdoor_co2"
+    value="{{ settings.outdoor_co2 }}">
 
-        <label class="field" for="air-changes">
-          <span class="field-label">Кратность воздухообмена</span>
-          <span class="field-help">Число замен объёма воздуха комнаты за час в модели.</span>
-          <span class="input-row">
-            <input class="setting-input" id="air-changes" type="number" name="air_changes_per_hour" inputmode="decimal" min="0.1" max="30" step="0.1" required value="{{ settings.air_changes_per_hour }}">
-            <span class="unit">1/ч</span>
-          </span>
-        </label>
-        </div>
-      </details>
+<input
+    type="hidden"
+    name="air_changes_per_hour"
+    value="{{ settings.air_changes_per_hour }}">
 
-      <section class="glass panel">
-        <button class="save-button" type="submit">Сохранить настройки</button>
-        <p class="note settings-note-spaced">Параметры применяются к учебным сценариям. Точность модели пока не подтверждена экспериментами.</p>
-      </section>
     </form>
 
 
@@ -301,23 +282,114 @@
       const target = document.getElementById("co2-target");
       const preferred = document.getElementById("co2-preferred");
 
-      // Раскрываем раздел с невалидным полем для браузерной проверки.
-      form.querySelectorAll("input").forEach(input => {
-        input.addEventListener("invalid", () => {
-          input.closest("details.settings-fold")?.setAttribute("open", "");
+      // Автосохранение параметров модели, не затрагивает форму «Мой дом».
+      const status = document.getElementById("settings-save-status");
+      const inputs = [...form.querySelectorAll("input")];
+      let timer = null;
+      let saving = false;
+      let queued = false;
+      let lastSaved = new URLSearchParams(new FormData(form)).toString();
+
+      function showSaveStatus(message, error = false) {
+        status.textContent = message;
+        status.style.color = error ? "#ff9b9b" : "";
+      }
+
+      function validateSettings() {
+        preferred.setCustomValidity("");
+        if (preferred.value !== "" && target.value !== "" &&
+            Number(preferred.value) > Number(target.value)) {
+          preferred.setCustomValidity(
+            "Предпочтительный CO₂ не должен превышать порог CO₂"
+          );
+        }
+        const invalid = inputs.find(input => !input.checkValidity());
+        if (invalid) {
+          showSaveStatus(
+            invalid.validity.customError
+              ? invalid.validationMessage
+              : "Проверь введённые значения. Изменения не сохранены.",
+            true
+          );
+          return false;
+        }
+        return true;
+      }
+
+      async function saveSettings() {
+        if (saving) {
+          queued = true;
+          return;
+        }
+        if (!validateSettings()) return;
+
+        const params = new URLSearchParams(new FormData(form));
+        const snapshot = params.toString();
+        if (snapshot === lastSaved) {
+          showSaveStatus("Сохранено");
+          return;
+        }
+
+        saving = true;
+        showSaveStatus("Сохраняем...");
+        try {
+          const response = await fetch(form.action || window.location.href, {
+            method: "POST",
+            body: params,
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            cache: "no-store"
+          });
+          if (!response.ok) throw new Error(`Ошибка сервера: ${response.status}`);
+
+          // Существующий обработчик Flask возвращает HTML даже при
+          // ошибке валидации: проверяем реальное подтверждение сохранения.
+          const page = new DOMParser().parseFromString(
+            await response.text(), "text/html"
+          );
+          const error = page.querySelector(".notice.error");
+          if (error) throw new Error(error.textContent.trim());
+          if (!page.querySelector(".notice.success")) {
+            throw new Error("Сервер не подтвердил сохранение настроек");
+          }
+
+          lastSaved = snapshot;
+          if (new URLSearchParams(new FormData(form)).toString() === snapshot) {
+            showSaveStatus("Сохранено");
+          }
+        } catch (error) {
+          showSaveStatus(`Не сохранено: ${error.message}`, true);
+        } finally {
+          saving = false;
+          if (queued || (lastSaved === snapshot &&
+              new URLSearchParams(new FormData(form)).toString() !== snapshot)) {
+            queued = false;
+            clearTimeout(timer);
+            timer = setTimeout(saveSettings, 700);
+          }
+        }
+      }
+
+      function scheduleSave() {
+        if (saving) queued = true;
+        clearTimeout(timer);
+        showSaveStatus("Изменено, ожидаем сохранения...");
+        timer = setTimeout(saveSettings, 700);
+      }
+
+      inputs.forEach(input => {
+        input.addEventListener("input", scheduleSave);
+        input.addEventListener("change", scheduleSave);
+        input.addEventListener("blur", () => {
+          if (input.validity.customError || !input.checkValidity()) {
+            input.closest("details.settings-fold")?.setAttribute("open", "");
+          }
         });
       });
 
-      // Соответствует серверной проверке в main.py.
       form.addEventListener("submit", event => {
-        if (Number(preferred.value) > Number(target.value)) {
-          event.preventDefault();
-          preferred.setCustomValidity("Предпочтительный CO₂ не должен превышать порог CO₂");
-          preferred.reportValidity();
-        }
-      });
-      [target, preferred].forEach(input => {
-        input.addEventListener("input", () => preferred.setCustomValidity(""));
+        event.preventDefault();
+        clearTimeout(timer);
+        saveSettings();
       });
 
       const scroller = document.querySelector(".app");

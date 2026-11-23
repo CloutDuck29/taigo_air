@@ -41,9 +41,6 @@
             <button class="tab" type="button" data-metric="temperature_inside">
                 Темп.
             </button>
-            <button class="tab" type="button" data-metric="humidity_inside">
-                Влажность
-            </button>
         </div>
 
         <div class="metric-summary">
@@ -141,9 +138,9 @@
 </script>
 
 <script>
-    const measurements = JSON.parse(
-        document.getElementById("history-data").textContent
-    );
+    let measurements = JSON.parse(
+    document.getElementById("history-data").textContent
+);
 
     const metrics = {
         co2: {
@@ -540,7 +537,56 @@ const points = [...pointsByTime.values()]
             renderHistory();
         });
 
-    renderHistory();
+renderHistory();
+
+// ID последнего измерения
+let lastMeasurementId = Math.max(
+    0,
+    ...measurements.map(item => Number(item.id) || 0)
+);
+
+// Автоматическая загрузка новых записей
+async function refreshHistory() {
+    try {
+        const response = await fetch(
+            `/api/history?after_id=${lastMeasurementId}`,
+            { cache: "no-store" }
+        );
+
+        if (!response.ok) {
+            throw new Error("Не удалось загрузить историю");
+        }
+
+        const data = await response.json();
+        const newMeasurements = data.measurements || [];
+
+        if (newMeasurements.length === 0) {
+            return;
+        }
+
+        measurements.push(...newMeasurements);
+
+        lastMeasurementId = Math.max(
+            lastMeasurementId,
+            ...newMeasurements.map(item => Number(item.id) || 0)
+        );
+
+        renderHistory();
+
+    } catch (error) {
+        console.error("Ошибка обновления истории:", error);
+    }
+}
+
+// Проверка каждые 30 секунд
+setInterval(refreshHistory, 30000);
+
+// Обновление при возвращении в приложение
+document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+        refreshHistory();
+    }
+});
 </script>
 
 
