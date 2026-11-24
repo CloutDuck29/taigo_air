@@ -1,0 +1,147 @@
+/* ===== TAIGOAIR — ОБЩЕЕ ВЕРХНЕЕ МЕНЮ ===== */
+
+.taigo-header {
+    position: relative;
+    z-index: 50;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    width: 100%;
+    min-height: 76px;
+
+    margin-bottom: 8px;
+    padding-top: calc(env(safe-area-inset-top, 0px) + 4px);
+    padding-bottom: 8px;
+}
+
+.taigo-header-title {
+    margin: 0;
+    min-width: 0;
+
+    color: white;
+    font-size: 34px;
+    font-weight: 750;
+    letter-spacing: -1.4px;
+}
+
+.taigo-menu {
+    position: relative;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.taigo-menu-toggle {
+    display: grid;
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+
+    padding: 0;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 50%;
+
+    background: rgba(27,40,46,.65);
+    color: white;
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.taigo-menu-toggle svg {
+    width: 23px;
+    height: 23px;
+    stroke-width: 1.8;
+}
+
+.taigo-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+
+    width: 210px;
+    padding: 8px;
+
+    z-index: 60;
+
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 22px;
+
+    background: rgba(25,43,61,.94);
+
+    backdrop-filter: blur(30px) saturate(130%);
+    -webkit-backdrop-filter: blur(30px) saturate(130%);
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.08);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: translateY(-8px) scale(.96);
+    transform-origin: top right;
+
+    transition:
+        opacity .24s ease,
+        transform .3s cubic-bezier(.22,1,.36,1),
+        visibility .24s;
+}
+
+.taigo-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+
+    transform: translateY(0) scale(1);
+}
+
+.taigo-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    padding: 14px 13px;
+    border-radius: 15px;
+
+    color: rgba(255,255,255,.9);
+    font-size: 15px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+        background .2s ease,
+        transform .2s ease;
+}
+
+.taigo-menu-item svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    stroke-width: 1.8;
+}
+
+.taigo-menu-item.active {
+    color: #FFC247;
+    background: rgba(255,194,71,.12);
+}
+
+.taigo-menu-item:active {
+    transform: scale(.97);
+    background: rgba(255,255,255,.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .taigo-dropdown,
+    .taigo-menu-item {
+        transition: none;
+    }
+}

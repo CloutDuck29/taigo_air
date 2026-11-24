@@ -66,7 +66,7 @@ select:focus-visible {
     background-position: center;
     background-size: cover;
     background-repeat: no-repeat;
-    filter: blur(5px);
+    filter: blur(12px);
 }
 /* Мягкий переход под системной строкой iPhone */
 .background::after {
@@ -100,7 +100,7 @@ select:focus-visible {
   max-width: 480px;
 
 height: calc(
-  100dvh - 132px - env(safe-area-inset-bottom)
+  100dvh - 110px - env(safe-area-inset-bottom)
 );
   min-height: 0;
 
@@ -2417,4 +2417,315 @@ input[type="number"]:focus-visible {
 .window-toggle:disabled {
     opacity: .6;
     cursor: default;
+}
+html {
+    background-color: #10449a;
+}
+
+body {
+    background: transparent;
+}
+/* ===== TAIGOAIR: ВЕРХНЕЕ МЕНЮ ===== */
+
+/* Используем всю доступную высоту экрана */
+
+.app {
+    height: 100dvh;
+    min-height: 0;
+
+    padding-bottom: 35px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+
+-webkit-mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 calc(100% - 90px),
+    transparent 100%
+);
+
+mask-image: linear-gradient(
+    to bottom,
+    #000 0%,
+    #000 calc(100% - 90px),
+    transparent 100%
+);
+}
+
+/* Нижнее меню больше не используется */
+
+.bottom-nav {
+    display: none !important;
+}
+
+/* Шапка */
+
+.header {
+    position: relative;
+    z-index: 50;
+    overflow: visible;
+}
+
+/* Контейнер меню */
+
+.header-menu {
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* Кнопка меню */
+
+.header-menu .icon-button {
+    display: grid;
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 50%;
+
+    background: rgba(27,40,46,.65);
+    color: white;
+
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* Выпадающее меню */
+
+.header-dropdown {
+    position: absolute;
+
+    top: calc(100% + 12px);
+    right: 0;
+
+    width: 210px;
+    padding: 8px;
+
+    z-index: 60;
+
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 22px;
+
+    background: rgba(25,43,61,.94);
+
+    backdrop-filter: blur(30px) saturate(130%);
+    -webkit-backdrop-filter: blur(30px) saturate(130%);
+
+    box-shadow:
+        0 15px 40px rgba(0,0,0,.28),
+        inset 0 1px 0 rgba(255,255,255,.08);
+
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+
+    transform: translateY(-8px) scale(.96);
+    transform-origin: top right;
+
+    transition:
+        opacity .24s ease,
+        transform .3s cubic-bezier(.22,1,.36,1),
+        visibility .24s;
+}
+
+/* Открытое меню */
+
+.header-dropdown.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+
+    transform: translateY(0) scale(1);
+}
+
+/* Пункты */
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+
+    width: 100%;
+    padding: 14px 13px;
+
+    border-radius: 15px;
+
+    color: rgba(255,255,255,.9);
+    font-size: 15px;
+    font-weight: 600;
+
+    text-decoration: none;
+
+    transition:
+        background .2s ease,
+        transform .2s ease;
+}
+
+.menu-item svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 1.8;
+    flex-shrink: 0;
+}
+
+/* Активная страница */
+
+.menu-item.active {
+    color: #FFC247;
+    background: rgba(255,194,71,.12);
+}
+
+.menu-item:active {
+    transform: scale(.97);
+    background: rgba(255,255,255,.12);
+}
+
+/* Сохранение доступности */
+
+@media (prefers-reduced-motion: reduce) {
+    .header-dropdown,
+    .menu-item {
+        transition: none;
+    }
+}
+/* ===== НИЖНИЙ ФОН: ВОЗВРАТ ВАРИАНТА БЕЗ ПОЛОСЫ ===== */
+
+/* Восстанавливаем прежнюю структуру слоёв */
+
+.app,
+.header,
+.header-menu,
+.header-dropdown,
+.modal,
+.bottom-nav {
+    position: relative;
+    z-index: 2;
+}
+
+/* Исправляем расположение шапки */
+
+.header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 12px;
+    z-index: 50;
+}
+
+.logo {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+.header-menu {
+    position: relative;
+    flex: 0 0 auto;
+    margin-left: auto;
+    z-index: 51;
+}
+
+/* Выпадающее меню справа */
+
+.header-dropdown {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    left: auto;
+    z-index: 60;
+}
+
+/* Модальные окна */
+
+.modal {
+    position: fixed;
+    z-index: 100;
+}
+
+/* Старую нижнюю навигацию скрываем */
+
+.bottom-nav {
+    display: none !important;
+}
+/* ===== ЕДИНЫЙ ПЕРЕХОД НЕБА В СИСТЕМНЫЙ ФОН ===== */
+
+html {
+    background: #10449a !important;
+}
+
+body {
+    background: transparent;
+}
+
+/* Нижняя подложка того же цвета */
+
+.background {
+    background: #10449a;
+}
+
+/* Фотография постепенно исчезает внизу */
+
+
+/* ===== РАЗМЫТИЕ ФОНА КАК НА СТРАНИЦЕ ИСТОРИИ ===== */
+
+/* ===== ФОН КАК НА СТРАНИЦЕ ИСТОРИИ ===== */
+
+.background::before {
+    content: "";
+    position: absolute;
+    inset: -20px;
+
+    background-image:
+        linear-gradient(
+            180deg,
+            rgba(10, 23, 38, 0.22) 0%,
+            rgba(14, 29, 39, 0.17) 55%,
+            rgba(12, 23, 18, 0.27) 100%
+        ),
+        url("/static/images/landscape.jpg");
+
+    background-position: center top;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+
+    filter: blur(12px);
+    -webkit-filter: blur(12px);
+
+    mask-image: none;
+    -webkit-mask-image: none;
+}
+
+/* Полупрозрачные стеклянные карточки */
+
+.glass {
+    background: rgba(27, 40, 46, 0.58);
+
+    backdrop-filter: blur(30px) saturate(140%);
+    -webkit-backdrop-filter: blur(30px) saturate(140%);
+
+    border: 1px solid rgba(255, 255, 255, 0.22);
+}
+/* Размытие исчезновения карточек снизу */
+
+.app {
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        #000 0%,
+        #000 calc(100% - 90px),
+        transparent 100%
+    ) !important;
+
+    mask-image: linear-gradient(
+        to bottom,
+        #000 0%,
+        #000 calc(100% - 90px),
+        transparent 100%
+    ) !important;
 }

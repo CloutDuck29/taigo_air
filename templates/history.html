@@ -15,6 +15,10 @@
   rel="stylesheet"
   href="{{ url_for('static', filename='css/history.css') }}"
 >
+    <link
+    rel="stylesheet"
+    href="{{ url_for('static', filename='css/navigation.css') }}"
+>
 
 </head>
 <body>
@@ -23,10 +27,47 @@
 
 <main class="app">
 
-<header class="header">
-        <div class="logo">TaigoAir</div>
-        <a href="/settings" class="icon-button" aria-label="Настройки"><i data-lucide="settings-2"></i></a>
-    </header>
+<header class="taigo-header">
+    <div class="taigo-header-title">TaigoAir</div>
+
+    <div class="taigo-menu">
+        <button
+            class="taigo-menu-toggle"
+            type="button"
+            aria-label="Открыть меню"
+            aria-expanded="false"
+            aria-controls="taigo-dropdown"
+        >
+            <i data-lucide="menu"></i>
+        </button>
+
+        <nav
+            id="taigo-dropdown"
+            class="taigo-dropdown"
+            aria-label="Навигация"
+            inert
+        >
+            <a href="/" class="taigo-menu-item">
+                <i data-lucide="house"></i>
+                <span>Главная</span>
+            </a>
+
+            <a
+                href="/history"
+                class="taigo-menu-item active"
+                aria-current="page"
+            >
+                <i data-lucide="history"></i>
+                <span>История</span>
+            </a>
+
+            <a href="/settings" class="taigo-menu-item">
+                <i data-lucide="settings-2"></i>
+                <span>Настройки</span>
+            </a>
+        </nav>
+    </div>
+</header>
 
     <section class="glass panel">
         <h2 class="section-title">Динамика показателей</h2>
@@ -126,12 +167,6 @@
     </section>
 
 </main>
-
-<nav class="bottom-nav" aria-label="Основная навигация">
-    <a href="/" class="nav-link"><i data-lucide="house"></i><span>Главная</span></a>
-    <a href="/history" class="nav-link active" aria-current="page"><i data-lucide="history"></i><span>История</span></a>
-    <a href="/settings" class="nav-link"><i data-lucide="settings-2"></i><span>Настройки</span></a>
-</nav>
 
 <script id="history-data" type="application/json">
 {{ measurements | tojson }}
@@ -608,12 +643,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const baseHeight = rect.height / oldScale;
       const baseTop = rect.top - oldOffset - baseHeight * (1 - oldScale) / 2;
       const baseBottom = baseTop + baseHeight;
-      const entering = Math.max(0, baseTop - (view.bottom - 200));
-      const leaving = Math.max(0, (view.top + 100) - baseBottom);
+const entering = Math.max(0, baseTop - (view.bottom - 70));
+const leaving = Math.max(0, (view.top + 100) - baseBottom);
       const distance = Math.max(entering, leaving);
       const progress = card === cards[cards.length - 1] && atBottom ? 0 : Math.min(1, distance / 160);
-      card.style.setProperty("--wheel-scale", (1 - progress * .10).toFixed(4));
-      card.style.setProperty("--wheel-offset", `${(progress * (entering > leaving ? 18 : -18)).toFixed(1)}px`);
+      card.style.setProperty("--wheel-scale", (1 - progress * .05).toFixed(4));
+card.style.setProperty(
+    "--wheel-offset",
+    `${(progress * (entering > leaving ? 6 : -6)).toFixed(1)}px`
+);
     });
     ticking = false;
   }
@@ -623,5 +661,6 @@ document.addEventListener("DOMContentLoaded", () => {
   update();
 });
 </script>
+<script src="{{ url_for('static', filename='js/navigation.js') }}"></script>
 </body>
 </html>

@@ -442,3 +442,52 @@ textarea {
  .settings-fold-heading { padding: 15px 16px; }
  .settings-fold-content { padding-left: 16px; padding-right: 16px; }
 }
+/* ===== НАСТРОЙКИ: ПОЛНОЭКРАННАЯ ПРОКРУТКА ===== */
+
+.app {
+    height: 100dvh;
+    min-height: 0;
+
+    padding-bottom: calc(
+        35px + env(safe-area-inset-bottom, 0px)
+    );
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+}
+
+.bottom-nav {
+    display: none !important;
+}
+/* ===== ПЛАВНОЕ ИСЧЕЗНОВЕНИЕ СНИЗУ ===== */
+
+.app {
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        #000 0%,
+        #000 calc(100% - 90px),
+        transparent 100%
+    );
+
+    mask-image: linear-gradient(
+        to bottom,
+        #000 0%,
+        #000 calc(100% - 90px),
+        transparent 100%
+    );
+}
+/* ===== ПЛАВНОСТЬ ДВИЖЕНИЯ КАРТОЧЕК ===== */
+
+.scroll-wheel-card {
+    transition: transform 0.12s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .scroll-wheel-card {
+        transition: none;
+        transform: none !important;
+    }
+}
